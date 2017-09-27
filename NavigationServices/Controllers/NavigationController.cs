@@ -68,15 +68,15 @@ namespace NavigationServices.Controllers
         [Route("{CodeOrID}/Route")]
         public async Task<IActionResult> Route(string CodeOrID, [FromBody]List<NavigationOption> options)
         {
-            //returns list of available Navigations
             try
             {
                 var selectednetwork = agent.GetNetwork(CodeOrID);
                 if (selectednetwork == null) return new BadRequestObjectResult("Network not found.");
-
                 selectednetwork.Configuration = options;   
                 
-                var route = agent.GetNetworkRoute(selectednetwork);
+
+                if(!agent.InitializeRoute(selectednetwork)) return new BadRequestObjectResult("One or more network options values are invalid.");
+                var route = agent.GetNetworkRoute();
                
                 return Ok(route);
             }

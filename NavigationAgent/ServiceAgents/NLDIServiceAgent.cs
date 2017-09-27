@@ -24,6 +24,10 @@ using System.Text;
 using WiM.Utilities.ServiceAgent;
 using NavigationAgent.Resources;
 using GeoJSON.Net.Geometry;
+using GeoJSON.Net.Feature;
+using GeoJSON.Net.CoordinateReferenceSystem;
+using System.Linq;
+using System.Collections;
 
 namespace NavigationAgent.ServiceAgents
 {
@@ -39,9 +43,36 @@ namespace NavigationAgent.ServiceAgents
         }
         #endregion
         #region Methods
-        internal Catchment GetLocalCatchment(Point location) {
+        internal FeatureCollection GetLocalCatchmentAsync(Point location) {
+            CRSBase crs = null;
 
-            throw new NotImplementedException();
+            try
+            {
+                crs = location.CRS as CRSBase;
+
+                var reqInfo = GetRequestInfo(nldiservicetype.e_catchment, new object[] { crs.Properties["name"], location.Coordinates.Longitude, location.Coordinates.Latitude });
+                var requestResult = this.ExecuteAsync<FeatureCollection>(reqInfo).Result;
+
+                return requestResult;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+        internal FeatureCollection GetNavigateAsync(string startlocation, navigateType navigationMode = navigateType.e_downstream_main)
+        {
+            try
+            {
+                var reqInfo = GetRequestInfo(nldiservicetype.e_navigate, new object[] {startlocation,getNavigateMode(navigationMode)});
+                var requestResult = this.ExecuteAsync<FeatureCollection>(reqInfo).Result;
+
+                return requestResult;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
         #endregion
         #region HelperMethods
@@ -67,7 +98,10 @@ namespace NavigationAgent.ServiceAgents
                 switch (filetype)
                 {
                     case nldiservicetype.e_catchment:
-                        resulturl = this.Resources["catchment"];
+                        resulturl = this.Resources["nhdplusWFS"];
+                        break;
+                    case nldiservicetype.e_navigate:
+                        resulturl = this.Resources["nldiQuery"];
                         break;
                    
                 }//end switch
@@ -78,10 +112,34 @@ namespace NavigationAgent.ServiceAgents
                 return string.Empty;
             }
         }
+        private string getNavigateMode(navigateType ntype)
+        {
+            switch (ntype)
+            {
+                case navigateType.e_downstream_diversions:
+                    return "DD";                
+                case navigateType.e_upstream_main:
+                    return "UM";
+                case navigateType.e_upstream_tributaries:
+                    return "UT";
+                case navigateType.e_downstream_main:
+                default:
+                    return "DM";
+            }
+
+        }
         #endregion
         private enum nldiservicetype
         {
-            e_catchment =1
+            e_catchment =1,
+            e_navigate =2
+        }
+        internal enum navigateType
+        {
+            e_downstream_diversions,
+            e_downstream_main,
+            e_upstream_main,
+            e_upstream_tributaries
         }
     }
 }

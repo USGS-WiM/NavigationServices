@@ -55,7 +55,6 @@ namespace NavigationServices
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
-            // global policy - assign here or on each controller
             app.UseCors("CorsPolicy");
             app.UseMvc();
         }
