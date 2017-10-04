@@ -25,7 +25,7 @@ namespace NavigationAgent.Resources
                 Description = "Specified lat/long/crs  navigation start location",
                 ValueType = "geojson point geometry",
 
-                Value = new Point(new Position(-84.088548, 39.79728106)) { CRS = new NamedCRS("EPSG:4326") }
+                Value = new Point(new Position(39.79728106, -84.088548)) { CRS = new NamedCRS("EPSG:4326") }
             };
         }
         public static NavigationOption EndPointLocationOption()
@@ -36,7 +36,7 @@ namespace NavigationAgent.Resources
                 Name = "End point location",
                 Description = "Specified lat/long/crs  navigation end location",
                 ValueType = "point",
-                Value = new Point(new Position(-84.088548, 39.79728106)) { CRS = new NamedCRS("EPSG:4326") }
+                Value = new Point(new Position(-39.79728106, -84.088548)) { CRS = new NamedCRS("EPSG:4326") }
             };
         }
         public static NavigationOption DistanceOption()

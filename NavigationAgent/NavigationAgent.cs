@@ -69,10 +69,11 @@ namespace NavigationAgent
             return selectedNetwork;
         }
         public bool InitializeRoute(Network selectednetwork) {
+            this.RouteConfigureation = new Route((navigationtype)selectednetwork.ID);
             if (!isValid(selectednetwork.ID, selectednetwork.Configuration)) return false;
-            this.RouteConfigureation = new Route((navigationtype)selectednetwork.ID, selectednetwork.Configuration);
-            isRouteInitialized = true;
+            RouteConfigureation.Configuration = selectednetwork.Configuration;
 
+            isRouteInitialized = true;
             return isRouteInitialized;
         }        
 
@@ -83,35 +84,41 @@ namespace NavigationAgent
                 switch (RouteConfigureation.Type)
                 {
                     case navigationtype.e_flowpath:
-                        if (!LoadCatchment()) throw new Exception("Catchment failed to load.");
-                        if (!LoadFlowDirectionTrace()) throw new Exception("FlowDirection failed to trace.");
-                        if (!LoadNetworkTrace(NavigationOption.directiontype.downstream)) throw new Exception("FlowDirection failed to trace.");
+                        loadFlowPath();
                         break;
                     case navigationtype.e_networkpath:
-                        if (!LoadCatchment()) throw new Exception("Catchment failed to load.");
-                        if (!LoadFlowDirectionTrace()) throw new Exception("FlowDirection failed to trace.");
-                        
-                        //**Figure** out how all lines are connected(using distance(or truncating polygon) as extent)
-                        //  *-> maybe merge overlapping traces and remove the overlap leaving the parent ends
-
+                        loadNetworkPath();
                         break;
                     case navigationtype.e_networktrace:
-                        if (!LoadCatchment()) throw new Exception("Catchment failed to load.");
-                        if (!LoadFlowDirectionTrace()) throw new Exception("FlowDirection failed to trace.");
-                        if (!LoadNetworkTrace()) throw new Exception("NetworkTrace failed.");
+                        if (!LoadCatchment(routeoptiontype.e_start)) throw new Exception("Catchment failed to load.");
+                        if (!LoadFlowDirectionTrace(routeoptiontype.e_start)) throw new Exception("FlowDirection failed to trace.");
+                        if (!LoadNetworkTrace(routeoptiontype.e_start)) throw new Exception("NetworkTrace failed.");
                         break;
                 }//end switch
-
-                return RouteConfigureation.FeatureCollection;
+                
+                return new FeatureCollection(RouteConfigureation.Features.Where(f=>f.Value.Id == null).Select(x=>x.Value).ToList());
             }
             catch (Exception)
             {
                 throw;
             }
         }
-
         #endregion
         #region HELPER METHODS
+        private void loadFlowPath(routeoptiontype rotype = routeoptiontype.e_start) {
+            
+            if (!LoadCatchment(rotype)) throw new Exception("Catchment failed to load.");
+            if (!LoadFlowDirectionTrace(rotype)) throw new Exception("FlowDirection failed to trace.");
+            if (!LoadNetworkTrace(rotype)) throw new Exception("FlowDirection failed to trace.");
+            MergeFlowDirectionNetworkTrace(rotype);
+
+        }
+        private void loadNetworkPath() {
+            loadFlowPath();
+            loadFlowPath(routeoptiontype.e_end);
+            IntersectAndReplaceNetwork();
+        }
+
         private Network GetNetworkByID(String networkIdentifier) {
             return this.AvailableNetworks.FirstOrDefault(n => String.Equals(n.ID.ToString(),networkIdentifier,StringComparison.OrdinalIgnoreCase) 
                             || String.Equals(n.Code.Trim(),networkIdentifier.Trim(),StringComparison.OrdinalIgnoreCase));
@@ -119,11 +126,12 @@ namespace NavigationAgent
         private List<NavigationOption> getNetworkOptions(navigationtype nType) {
             List<NavigationOption> options = new List<NavigationOption>();
             options.Add(NavigationOption.StartPointLocationOption());
-            options.Add(NavigationOption.LimitOption());
+            
 
             switch (nType)
             {
                 case navigationtype.e_flowpath:
+                    options.Add(NavigationOption.LimitOption());
                     break;
                 case navigationtype.e_networkpath:
                     options.Insert(1, NavigationOption.EndPointLocationOption());
@@ -131,6 +139,7 @@ namespace NavigationAgent
                 case navigationtype.e_networktrace:
                     options.Insert(1,NavigationOption.DirectionOption());
                     options.Insert(2, NavigationOption.QuerySourceOption());
+                    options.Add(NavigationOption.LimitOption());
                     break;
                 default:
                     break;
@@ -204,13 +213,17 @@ namespace NavigationAgent
         {
             try
             {
-                switch ((NavigationOption.navigationoptiontype)option.ID)
+                NavigationOption.navigationoptiontype sType = (NavigationOption.navigationoptiontype)option.ID;
+                switch (sType)
                 {
                     case NavigationOption.navigationoptiontype.e_startpoint:
                     case NavigationOption.navigationoptiontype.e_endpoint:
                         // is valid geojson point
-                        if (JsonConvert.DeserializeObject<Point>(JsonConvert.SerializeObject(option.Value)) != null) return true;
-                        break;
+                        Point point = JsonConvert.DeserializeObject<Point>(JsonConvert.SerializeObject(option.Value));
+                        if (point == null) return false;                        
+                        this.RouteConfigureation.Features.Add(getFeatureName((routeoptiontype)option.ID, navigationfeaturetype.e_point), new Feature(point) { CRS = point.CRS });
+                        return true;
+
                     case NavigationOption.navigationoptiontype.e_distance:
                         double result;
                         if (Double.TryParse(option.Value.ToString(), out result)) return true;
@@ -236,15 +249,10 @@ namespace NavigationAgent
             }
         }
 
-        private bool LoadCatchment() {            
+        private bool LoadCatchment(routeoptiontype rotype) {
             try
             {
-                var options = this.RouteConfigureation.Configuration;
-
-                Point startpoint = JsonConvert.DeserializeObject<Point>(JsonConvert.SerializeObject(options.Find(s => s.ID == (int)NavigationOption.navigationoptiontype.e_startpoint).Value));
-       
-                this.RouteConfigureation.FeatureCollection.Features.Add(new Feature(startpoint));
-
+                Point startpoint = ((Point)RouteConfigureation.Features[getFeatureName(rotype, navigationfeaturetype.e_point)].Geometry);
                 FeatureCollection localCatchment = this.nldiAgent.GetLocalCatchmentAsync(startpoint);
 
                 if (localCatchment == null) return false;
@@ -252,7 +260,7 @@ namespace NavigationAgent
                 if (string.IsNullOrEmpty(comid)) return false;
 
                 this.RouteConfigureation.ComID = comid;
-                this.RouteConfigureation.catchment = localCatchment.Features.FirstOrDefault();
+                this.RouteConfigureation.Features.Add(getFeatureName(rotype,navigationfeaturetype.e_catchment), localCatchment.Features.FirstOrDefault());
 
                 return true;
             }
@@ -261,18 +269,17 @@ namespace NavigationAgent
                 return false;
             }
         }
-        private bool LoadFlowDirectionTrace() {
+        private bool LoadFlowDirectionTrace(routeoptiontype rotype) {
             try
             {
-                var options = this.RouteConfigureation.Configuration;
 
-                var startpoint = JsonConvert.SerializeObject(options.Find(s => s.ID == (int)NavigationOption.navigationoptiontype.e_startpoint).Value);
-                var catchmentMask = this.RouteConfigureation.catchment;
+                Feature startpoint = RouteConfigureation.Features[getFeatureName(rotype, navigationfeaturetype.e_point)];
+                Feature catchmentMask = RouteConfigureation.Features[getFeatureName(rotype, navigationfeaturetype.e_catchment)];
 
-                FeatureCollection fldrTrace = this.ssAgent.GetFDirTraceAsync(JsonConvert.DeserializeObject<Point>(startpoint),catchmentMask);
+                Feature fldrTrace = this.ssAgent.GetFDirTraceAsync(startpoint, catchmentMask);
                 if (fldrTrace == null) return false;
 
-                this.RouteConfigureation.FeatureCollection.Features.Add(fldrTrace.Features.FirstOrDefault());
+                this.RouteConfigureation.Features.Add(getFeatureName(rotype, navigationfeaturetype.e_fdrroute), fldrTrace);
 
                 return true;
             }
@@ -281,15 +288,80 @@ namespace NavigationAgent
                 return false;
             }
         }
-
-        private bool LoadNetworkTrace(NavigationOption.directiontype tracetype = NavigationOption.directiontype.downstream, NavigationOption.querysourcetype source = NavigationOption.querysourcetype.flowline)
+        private bool LoadNetworkTrace(routeoptiontype rotype,NavigationOption.directiontype tracetype = NavigationOption.directiontype.downstream, NavigationOption.querysourcetype source = NavigationOption.querysourcetype.flowline)
         {
             FeatureCollection traceFC = this.nldiAgent.GetNavigateAsync(this.RouteConfigureation.ComID);
 
             if (traceFC == null) return false;
-            this.RouteConfigureation.FeatureCollection.Features.AddRange(traceFC.Features.Where(f=>!String.Equals(f.Properties["nhdplus_comid"].ToString(),this.RouteConfigureation.ComID)));
+
+            var items = traceFC.Features.Where(f => !String.Equals(f.Properties["nhdplus_comid"].ToString(), this.RouteConfigureation.ComID)).ToList();
+            for (int i = 0; i < items.Count(); i++)
+            {
+                this.RouteConfigureation.Features.Add(getFeatureName(rotype, navigationfeaturetype.e_traceroute)+i, items[i]);
+            }//next item
+            
             return true;
         }
+        private void MergeFlowDirectionNetworkTrace(routeoptiontype rotype) {
+            try
+            {
+                IPosition FDir = ((LineString)RouteConfigureation.Features[getFeatureName(rotype, navigationfeaturetype.e_fdrroute)].Geometry).Coordinates.Last();
+                IPosition first = ((LineString)RouteConfigureation.Features[getFeatureName(rotype, navigationfeaturetype.e_traceroute)+"0"].Geometry).Coordinates.First();
+
+                LineString merge = new LineString(new List<IPosition>() { FDir, first });
+                RouteConfigureation.Features.Add(getFeatureName(rotype, navigationfeaturetype.e_connection), new Feature(merge));
+            }
+            catch (Exception)
+            {
+                
+            }
+           
+
+        }
+        private bool IntersectAndReplaceNetwork()
+        {
+#warning look here. need to finish 
+            return true;
+        }
+
+        private string getFeatureName(routeoptiontype roType, navigationfeaturetype ftype) {
+            string name = "";
+            switch (ftype)
+            {                
+                case navigationfeaturetype.e_catchment:
+                    name= "catchment";
+                    break;
+                case navigationfeaturetype.e_point:
+                    name = "point";
+                    break;
+                case navigationfeaturetype.e_fdrroute:
+                    name = "flow_direction_route";
+                    break;
+                case navigationfeaturetype.e_traceroute:
+                    name = "trace_route";
+                    break;
+                case navigationfeaturetype.e_connection:
+                    name = "connection";
+                    break;
+                case navigationfeaturetype.e_query:
+                    name = "query";
+                    break;
+                default:
+                    name = "notspecified";
+                    break;
+            }//end switch
+            return getRoutOptionName(roType) + "_" + name;
+        }
+        private string getRoutOptionName(routeoptiontype roType)
+        {
+            switch (roType)
+            {
+                case  routeoptiontype.e_start: return "start";
+                case routeoptiontype.e_end: return "end";
+                default: return "";
+            }//end switch
+        }
+
         #endregion
         #region Enumerations
         public enum navigationtype
@@ -299,7 +371,22 @@ namespace NavigationAgent
             e_networkpath = 2,  // network connection between 2 points
             e_networktrace =3   // upstream/downstream trace, find nearest gage to a specified distance etc.
         }      
-        
+        public enum navigationfeaturetype
+        {
+            e_catchment,
+            e_point,
+            e_fdrroute,
+            e_traceroute,
+            e_connection,
+            e_query
+        }
+        public enum routeoptiontype
+        {
+            //must match navigationoptions start/end point
+            e_start=1,
+            e_end=2
+        }
+
         #endregion
     }
 }
