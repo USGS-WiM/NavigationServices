@@ -16,6 +16,8 @@ namespace NavigationAgent.Resources
       
         public List<NavigationOption> Configuration { get; internal set; }
 
+        public bool IncludesLimit { get; set; }
+
         #region Constructor
         public Route(NavigationAgent.navigationtype type)
         {
