@@ -109,8 +109,8 @@ namespace NavigationAgent
         private void loadFlowPath(routeoptiontype rotype = routeoptiontype.e_start) {
             
             if (!LoadCatchment(rotype)) throw new Exception("Catchment failed to load.");
-            if (!LoadFlowDirectionTrace(rotype)) throw new Exception("FlowDirection failed to trace.");
-            if (!LoadNetworkTrace(rotype)) throw new Exception("FlowDirection failed to trace.");
+            if (!LoadFlowDirectionTrace(rotype)) Console.WriteLine("FlowDirection failed to trace.");
+            if (!LoadNetworkTrace(rotype)) Console.WriteLine("FlowDirection failed to trace.");
             MergeFlowDirectionNetworkTrace(rotype);
 
         }
@@ -121,14 +121,20 @@ namespace NavigationAgent
         }
         private void loadNetworkTrace() {
             if (!LoadCatchment(routeoptiontype.e_start)) throw new Exception("Catchment failed to load.");
+            
+            if(!Enum.TryParse(Route.Configuration.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_navigationdirection).Value, out NavigationOption.directiontype dtype))
+                dtype = NavigationOption.directiontype.downstream;
 
-            var directiontype = Route.Configuration.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_navigationdirection);
-            var queries = Route.Configuration.Where(x => x.ID == (int)NavigationOption.navigationoptiontype.e_querysource).ToList();
+            var queries = Route.Configuration.Where(x => x.ID == (int)NavigationOption.navigationoptiontype.e_querysource)
+                .Where(x=> Enum.TryParse(x.Value,out NavigationOption.querysourcetype sType)).Select(x=> { Enum.TryParse(x.Value, out NavigationOption.querysourcetype sType); return sType; }).ToList();
 
-            if(directiontype.Value == NavigationOption.directiontype.downstream)
-                if (!LoadFlowDirectionTrace(routeoptiontype.e_start)) throw new Exception("FlowDirection failed to trace.");
 
-            if (!LoadNetworkTrace(routeoptiontype.e_start)) throw new Exception("NetworkTrace failed.");
+            if(dtype == NavigationOption.directiontype.downstream)
+                if (!LoadFlowDirectionTrace(routeoptiontype.e_start)) Console.WriteLine("FlowDirection failed to trace.");
+            foreach (var item in queries)
+            {
+                if (!LoadNetworkTrace(routeoptiontype.e_start, dtype,item)) Console.WriteLine("Failed to trace network for "+item);
+            }//next query            
         }
 
         private Network GetNetworkByID(String networkIdentifier) {
@@ -260,7 +266,6 @@ namespace NavigationAgent
                 return false;
             }
         }
-
         private bool LoadCatchment(routeoptiontype rotype) {
             try
             {
@@ -315,15 +320,20 @@ namespace NavigationAgent
             return true;
         }
         private void MergeFlowDirectionNetworkTrace(routeoptiontype rotype) {
+            IPosition FDir = null;
+            IPosition first = null;
             try
             {
-                IPosition FDir = ((LineString)Route.Features[getFeatureName(rotype, navigationfeaturetype.e_fdrroute)].Geometry).Coordinates.Last();
-                IPosition first = ((LineString)Route.Features[getFeatureName(rotype, navigationfeaturetype.e_traceroute)+"0"].Geometry).Coordinates.First();
+                if (!Route.Features.ContainsKey(getFeatureName(rotype, navigationfeaturetype.e_fdrroute)) || 
+                    !Route.Features.ContainsKey(getFeatureName(rotype, navigationfeaturetype.e_fdrroute) + "0")) return;
+
+                FDir = ((LineString)Route.Features[getFeatureName(rotype, navigationfeaturetype.e_fdrroute)].Geometry).Coordinates.Last();
+                first = ((LineString)Route.Features[getFeatureName(rotype, navigationfeaturetype.e_traceroute)+"0"].Geometry).Coordinates.First();
 
                 LineString merge = new LineString(new List<IPosition>() { FDir, first });
                 Route.Features.Add(getFeatureName(rotype, navigationfeaturetype.e_connection), new Feature(merge));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 
             }

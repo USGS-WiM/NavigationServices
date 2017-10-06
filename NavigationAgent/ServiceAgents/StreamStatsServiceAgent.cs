@@ -52,13 +52,10 @@ namespace NavigationAgent.ServiceAgents
             try
             {
                 crs = location.CRS as CRSBase;
-                object body =  getBody(location, crs.Properties["name"].ToString().Replace("EPSG:", ""), mask);
-
-                RequestInfo reqInfo = new RequestInfo(GetResourcrUrl(streamstatsservicetype.e_fdrtrace), body,contentType.FORMURL,methodType.e_POST);
-                JObject requestResult = this.ExecuteAsync<JObject>(reqInfo).Result;
+                var body =  getBody(location, crs.Properties["name"].ToString().Replace("EPSG:", ""), mask);
+                
+                JObject requestResult = this.ExecuteAsync<JObject>(GetResourcrUrl(streamstatsservicetype.e_fdrtrace),new OverRideUrlEncodedContent(body),methodType.e_POST).Result;
                 LineString result = requestResult["results"][0].SelectToken("value.trace").ToObject<LineString>();
-
-
 
                 Feature traceFeature = new Feature(result, new Dictionary<string, object>{{ "method", "streamstats flow direction trace" },
                                                                                 {"description","traverses over flow direction raster to find downstream routing of neighboring cells" } });
@@ -81,8 +78,6 @@ namespace NavigationAgent.ServiceAgents
             body.Add(new KeyValuePair<string, string>("f", "pjson"));
 
             return body;
-           
-
         }
         private String GetResourcrUrl(streamstatsservicetype filetype)
         {
