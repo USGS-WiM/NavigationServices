@@ -6,9 +6,15 @@ using Microsoft.Extensions.Logging;
 using NavigationAgent;
 using NavigationAgent.Resources;
 using Microsoft.AspNetCore.Mvc;
+using WiM.Services.Middleware;
+using WiM.Services.Analytics;
+using WiM.Utilities.ServiceAgent;
 
 namespace NavigationServices
 {
+#warning https://stackify.com/net-core-loggerfactory-use-correctly/
+#warning https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware?tabs=aspnetcore2x
+
     public class Startup
     {
         public Startup(IHostingEnvironment env)
@@ -27,7 +33,7 @@ namespace NavigationServices
 
         public IConfigurationRoot Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        //Method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             //add functionality to inject IOptions<T>
@@ -37,7 +43,7 @@ namespace NavigationServices
 
             // Add framework services
             services.AddScoped<INavigationAgent, NavigationAgent.NavigationAgent>();
-
+            services.AddScoped<IAnalyticsAgent, GoogleAnalyticsAgent>((gaa)=> new GoogleAnalyticsAgent(Configuration["AnalyticsKey"]));
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder => builder.AllowAnyOrigin()
@@ -50,13 +56,17 @@ namespace NavigationServices
                                 .AddJsonOptions(options => loadJsonOptions(options));
         }     
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        // Method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+
             app.UseCors("CorsPolicy");
-            app.UseMvc();
+            app.Use_Analytics();
+            app.UseX_Messages();           
+
+            app.UseMvc();            
         }
 
         #region Helper Methods

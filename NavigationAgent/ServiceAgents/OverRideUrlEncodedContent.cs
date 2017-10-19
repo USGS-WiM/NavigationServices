@@ -1,4 +1,27 @@
-﻿using System;
+﻿//------------------------------------------------------------------------------
+//----- OverrideUrlEncodedContent ----------------------------------------------
+//------------------------------------------------------------------------------
+
+//-------1---------2---------3---------4---------5---------6---------7---------8
+//       01234567890123456789012345678901234567890123456789012345678901234567890
+//-------+---------+---------+---------+---------+---------+---------+---------+
+
+// copyright:   2017 WiM - USGS
+
+//    authors:  Jeremy K. Newson USGS Web Informatics and Mapping
+//              
+//  
+//   purpose:   Overrides the url encoded content in order to overcome
+//              the encoding limitation.
+//
+//discussion:   This override was implemented in order to pass a request to 
+//              an ESRI geoprocessing services, which uses form urlencoded 
+//              strings for POST bodies. However When Bodies are large FromUrlEncodedContent
+//              throws an 'Invalid URI: The uri string is too long' based on a character limit of 2083.
+//
+//              an adaption of https://stackoverflow.com/questions/23703735/how-to-set-large-string-inside-httpcontent-when-using-httpclient#answer-23740338
+//              solution seemed to work for this usecase.
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -40,7 +63,6 @@ namespace NavigationAgent.ServiceAgents
             {
                 return string.Empty;
             }
-            //return JsonConvert.SerializeObject(data);
             return System.Net.WebUtility.UrlEncode(data);
         }
     }

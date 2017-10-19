@@ -15,7 +15,9 @@
 //              capturing the data that's returned and forwarding the data back to 
 //              the requestor.
 //
-//discussion:   delegated hunting and gathering responsibilities.   
+//discussion:   This is the main Agent that manages the subserviant service agents for 
+//              Navigation. Navigation Agent puts all the pieces together and returns 
+//              the results to the requester
 //
 // 
 
@@ -28,63 +30,64 @@ using Microsoft.Extensions.Options;
 using GeoJSON.Net.Geometry;
 using Newtonsoft.Json;
 using GeoJSON.Net.Feature;
+using WiM.Resources;
+
 
 namespace NavigationAgent
 {
-    public interface INavigationAgent
+    public interface INavigationAgent:IMessage
     {
         List<Network> GetNetworks();
         Network GetNetwork(string networkIdentifier);
         bool InitializeRoute(Network selectednetwork);       
         FeatureCollection GetNetworkRoute();        
     }
+
     public class NavigationAgent : INavigationAgent
     {
         #region Properties
         private bool isRouteInitialized = false;
-        public NetworkSettings settings { get; set; }
         private NLDIServiceAgent nldiAgent { get; set; }
         private StreamStatsServiceAgent ssAgent { get; set; }
-        private List<Network> AvailableNetworks { get; set; }
-
-        private Route Route { get; set; }
-
+        private List<Network> availableNetworks { get; set; }
+        private Route route { get; set; }
+        public List<Message> Messages { get; private set; }
         #endregion
         #region Constructor
         public NavigationAgent(IOptions<NetworkSettings> NetworkSettings)
         {
             nldiAgent = new NLDIServiceAgent(NetworkSettings.Value.NLDI);
             ssAgent = new StreamStatsServiceAgent(NetworkSettings.Value.StreamStats);
-            AvailableNetworks = NetworkSettings.Value.Networks;
+            availableNetworks = NetworkSettings.Value.Networks;
+            Messages = new List<Message>();
         }
         #endregion
         #region Methods
         public List<Network> GetNetworks() {
-
+            
             return Enum.GetValues(typeof(navigationtype)).Cast<navigationtype>()
-                .Select(t => GetNetworkByID(((Int32)t).ToString())).ToList();
+                .Select(t => getNetworkByID(((Int32)t).ToString())).ToList();
         }
         public Network GetNetwork(string networkIdentifier) {
-            var selectedNetwork = GetNetworkByID(networkIdentifier);
+            var selectedNetwork = getNetworkByID(networkIdentifier);
             selectedNetwork.Configuration = getNetworkOptions((navigationtype)selectedNetwork.ID);
             return selectedNetwork;
         }
         public bool InitializeRoute(Network selectednetwork) {
-            this.Route = new Route((navigationtype)selectednetwork.ID);
+            this.route = new Route((navigationtype)selectednetwork.ID);
             if (!isValid(selectednetwork.ID, selectednetwork.Configuration)) return false;
 
-            Route.Configuration = selectednetwork.Configuration;
+            route.Configuration = selectednetwork.Configuration;
 
             isRouteInitialized = true;
             return isRouteInitialized;
         }        
-
         public FeatureCollection GetNetworkRoute()
         {
             try
             {
                 if (!this.isRouteInitialized) return null;
-                switch (Route.Type)
+                switch (route.Type)
                 {
                     case navigationtype.e_flowpath:
                         loadFlowPath();
@@ -97,7 +100,7 @@ namespace NavigationAgent
                         break;
                 }//end switch
                 
-                return new FeatureCollection(Route.Features.Where(f=>f.Value.Id == null).Select(x=>x.Value).ToList());
+                return new FeatureCollection(route.Features.Where(f=>f.Value.Id == null).Select(x=>x.Value).ToList());
             }
             catch (Exception)
             {
@@ -106,42 +109,48 @@ namespace NavigationAgent
         }
         #endregion
         #region HELPER METHODS
+        private void sm(string message, MessageType type = MessageType.info)
+        {
+
+            this.Messages.Add(new Message() { msg=message, type = type });
+        }
         private void loadFlowPath(routeoptiontype rotype = routeoptiontype.e_start) {
             
-            if (!LoadCatchment(rotype)) throw new Exception("Catchment failed to load.");
-            if (!LoadFlowDirectionTrace(rotype)) Console.WriteLine("FlowDirection failed to trace.");
-            if (!LoadNetworkTrace(rotype)) Console.WriteLine("FlowDirection failed to trace.");
-            MergeFlowDirectionNetworkTrace(rotype);
+            if (!loadCatchment(rotype)) throw new Exception("Catchment failed to load.");
+            if (!loadFlowDirectionTrace(rotype)) Console.WriteLine("FlowDirection failed to trace.");
+            if (!loadNetworkTrace(rotype)) Console.WriteLine("FlowDirection failed to trace.");
+            mergeFlowDirectionNetworkTrace(rotype);
 
         }
         private void loadNetworkPath() {
             loadFlowPath();
             loadFlowPath(routeoptiontype.e_end);
-            IntersectAndReplaceNetwork();
+            removeIntersectingFeatures();
         }
         private void loadNetworkTrace() {
-            if (!LoadCatchment(routeoptiontype.e_start)) throw new Exception("Catchment failed to load.");
+            if (!loadCatchment(routeoptiontype.e_start)) throw new Exception("Catchment failed to load.");
             
-            if(!Enum.TryParse(Route.Configuration.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_navigationdirection).Value, out NavigationOption.directiontype dtype))
+            if(!Enum.TryParse(route.Configuration.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_navigationdirection).Value, out NavigationOption.directiontype dtype))
                 dtype = NavigationOption.directiontype.downstream;
 
-            var queries = Route.Configuration.Where(x => x.ID == (int)NavigationOption.navigationoptiontype.e_querysource)
+            var queries = route.Configuration.Where(x => x.ID == (int)NavigationOption.navigationoptiontype.e_querysource)
                 .Where(x=> Enum.TryParse(x.Value,out NavigationOption.querysourcetype sType)).Select(x=> { Enum.TryParse(x.Value, out NavigationOption.querysourcetype sType); return sType; }).ToList();
 
 
             if(dtype == NavigationOption.directiontype.downstream)
-                if (!LoadFlowDirectionTrace(routeoptiontype.e_start)) Console.WriteLine("FlowDirection failed to trace.");
+                if (!loadFlowDirectionTrace(routeoptiontype.e_start)) Console.WriteLine("FlowDirection failed to trace.");
             foreach (var item in queries)
             {
-                if (!LoadNetworkTrace(routeoptiontype.e_start, dtype,item)) Console.WriteLine("Failed to trace network for "+item);
+                if (!loadNetworkTrace(routeoptiontype.e_start, dtype,item)) Console.WriteLine("Failed to trace network for "+item);
             }//next query            
         }
 
-        private Network GetNetworkByID(String networkIdentifier) {
-            return this.AvailableNetworks.FirstOrDefault(n => String.Equals(n.ID.ToString(),networkIdentifier,StringComparison.OrdinalIgnoreCase) 
+        private Network getNetworkByID(String networkIdentifier) {
+            return this.availableNetworks.FirstOrDefault(n => String.Equals(n.ID.ToString(),networkIdentifier,StringComparison.OrdinalIgnoreCase) 
                             || String.Equals(n.Code.Trim(),networkIdentifier.Trim(),StringComparison.OrdinalIgnoreCase));
         }
         private List<NavigationOption> getNetworkOptions(navigationtype nType) {
+            sm("Configuring Network options " + nType.ToString());
             List<NavigationOption> options = new List<NavigationOption>();
             options.Add(NavigationOption.StartPointLocationOption());
             
@@ -160,6 +169,7 @@ namespace NavigationAgent
                     options.Add(NavigationOption.LimitOption());
                     break;
                 default:
+                    sm("No navigation options exist " + nType);
                     break;
             }
             return options;
@@ -219,10 +229,12 @@ namespace NavigationAgent
                         break;
                 }
 
+                sm("Options are valid");
                 return true;
             }
             catch (Exception ex)
             {
+                sm("Error occured while validating " + ex.Message, MessageType.error);
                 return false;
                 throw;
             }
@@ -238,8 +250,8 @@ namespace NavigationAgent
                     case NavigationOption.navigationoptiontype.e_endpoint:
                         // is valid geojson point
                         Point point = JsonConvert.DeserializeObject<Point>(JsonConvert.SerializeObject(option.Value));
-                        if (point == null) return false;                        
-                        this.Route.Features.Add(getFeatureName((routeoptiontype)option.ID, navigationfeaturetype.e_point), new Feature(point) { CRS = point.CRS });
+                        if (point == null) break;                        
+                        this.route.Features.Add(getFeatureName((routeoptiontype)option.ID, navigationfeaturetype.e_point), new Feature(point) { CRS = point.CRS });
                         return true;
 
                     case NavigationOption.navigationoptiontype.e_distance:
@@ -258,107 +270,126 @@ namespace NavigationAgent
                         if (Enum.IsDefined(typeof(NavigationOption.querysourcetype), option.Value)) return true;
                         break;
                 }
-
+                sm(option.Name + " is invalid. Please provide a valid " + option.Name, MessageType.warning);
                 return false;
             }
             catch (Exception ex)
             {
+                sm("Error occured while validating"+ option.Name +" "+ ex.Message, MessageType.error);
                 return false;
             }
         }
-        private bool LoadCatchment(routeoptiontype rotype) {
+        private bool loadCatchment(routeoptiontype rotype) {
             try
             {
-                Point startpoint = ((Point)Route.Features[getFeatureName(rotype, navigationfeaturetype.e_point)].Geometry);
+                Point startpoint = ((Point)route.Features[getFeatureName(rotype, navigationfeaturetype.e_point)].Geometry);
                 FeatureCollection localCatchment = this.nldiAgent.GetLocalCatchmentAsync(startpoint);
 
-                if (localCatchment == null) return false;
+                if (localCatchment == null)
+                    throw new Exception(String.Format("nldi failed to return catchment. X {0}, Y {1}", startpoint.Coordinates.Longitude, startpoint.Coordinates.Latitude));
                 var comid = localCatchment.Features.FirstOrDefault().Properties["featureid"].ToString();
-                if (string.IsNullOrEmpty(comid)) return false;
-
-                this.Route.ComID = comid;
-                this.Route.Features.Add(getFeatureName(rotype,navigationfeaturetype.e_catchment), localCatchment.Features.FirstOrDefault());
-
+                if (string.IsNullOrEmpty(comid))
+                    throw new Exception(String.Format("nldi catchment does not contain property featureid X {0}, Y {1}", startpoint.Coordinates.Longitude, startpoint.Coordinates.Latitude));
+                this.route.ComID = comid;
+                this.route.Features.Add(getFeatureName(rotype,navigationfeaturetype.e_catchment), localCatchment.Features.FirstOrDefault());
+                sm("Catchement valid, ComID: " + comid);
                 return true;
             }
             catch (Exception ex)
             {
+                sm("Catchement invalid " +ex.Message, MessageType.error);
                 return false;
             }
         }
-        private bool LoadFlowDirectionTrace(routeoptiontype rotype) {
+        private bool loadFlowDirectionTrace(routeoptiontype rotype) {
             try
             {
 
-                Feature startpoint = Route.Features[getFeatureName(rotype, navigationfeaturetype.e_point)];
-                Feature catchmentMask = Route.Features[getFeatureName(rotype, navigationfeaturetype.e_catchment)];
+                Feature startpoint = route.Features[getFeatureName(rotype, navigationfeaturetype.e_point)];
+                Feature catchmentMask = route.Features[getFeatureName(rotype, navigationfeaturetype.e_catchment)];
 
                 Feature fldrTrace = this.ssAgent.GetFDirTraceAsync(startpoint, catchmentMask);
-                if (fldrTrace == null) return false;
+                if (fldrTrace == null)
+                    throw new Exception("Flow direction trace object null.");
 
-                this.Route.Features.Add(getFeatureName(rotype, navigationfeaturetype.e_fdrroute), fldrTrace);
+                this.route.Features.Add(getFeatureName(rotype, navigationfeaturetype.e_fdrroute), fldrTrace);
 
                 return true;
             }
             catch (Exception ex)
             {
+                sm("Error loading Flow direction trace " + ex.Message, MessageType.error);
                 return false;
             }
         }
-        private bool LoadNetworkTrace(routeoptiontype rotype,NavigationOption.directiontype tracetype = NavigationOption.directiontype.downstream, NavigationOption.querysourcetype source = NavigationOption.querysourcetype.flowline)
+        private bool loadNetworkTrace(routeoptiontype rotype,NavigationOption.directiontype tracetype = NavigationOption.directiontype.downstream, NavigationOption.querysourcetype source = NavigationOption.querysourcetype.flowline)
         {
-            FeatureCollection traceFC = this.nldiAgent.GetNavigateAsync(this.Route.ComID);
-
-            if (traceFC == null) return false;
-
-            var items = traceFC.Features.Where(f => !String.Equals(f.Properties["nhdplus_comid"].ToString(), this.Route.ComID)).ToList();
-            for (int i = 0; i < items.Count(); i++)
+            try
             {
-                this.Route.Features.Add(getFeatureName(rotype, navigationfeaturetype.e_traceroute)+i, items[i]);
-            }//next item
+
+                FeatureCollection traceFC = this.nldiAgent.GetNavigateAsync(this.route.ComID);
+
+                if (traceFC == null)
+                    throw new Exception("Network trace from nldi agent is null. ComID: "+this.route.ComID);
+
+                var items = traceFC.Features.Where(f => !String.Equals(f.Properties["nhdplus_comid"].ToString(), this.route.ComID)).ToList();
+                for (int i = 0; i < items.Count(); i++)
+                {
+                    this.route.Features.Add(getFeatureName(rotype, navigationfeaturetype.e_traceroute)+i, items[i]);
+                }//next item
             
-            return true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                sm("Error loading Network trace " + ex.Message, MessageType.error);
+                return false;
+            }
         }
-        private void MergeFlowDirectionNetworkTrace(routeoptiontype rotype) {
+        private void mergeFlowDirectionNetworkTrace(routeoptiontype rotype) {
             IPosition FDir = null;
             IPosition first = null;
             try
             {
-                if (!Route.Features.ContainsKey(getFeatureName(rotype, navigationfeaturetype.e_fdrroute)) || 
-                    !Route.Features.ContainsKey(getFeatureName(rotype, navigationfeaturetype.e_fdrroute) + "0")) return;
 
-                FDir = ((LineString)Route.Features[getFeatureName(rotype, navigationfeaturetype.e_fdrroute)].Geometry).Coordinates.Last();
-                first = ((LineString)Route.Features[getFeatureName(rotype, navigationfeaturetype.e_traceroute)+"0"].Geometry).Coordinates.First();
+                if (!route.Features.ContainsKey(getFeatureName(rotype, navigationfeaturetype.e_fdrroute)) || 
+                    !route.Features.ContainsKey(getFeatureName(rotype, navigationfeaturetype.e_traceroute) + "0"))
+                    throw new Exception("Either flow direction or network trace is not available.");
+
+                FDir = ((LineString)route.Features[getFeatureName(rotype, navigationfeaturetype.e_fdrroute)].Geometry).Coordinates.Last();
+                first = ((LineString)route.Features[getFeatureName(rotype, navigationfeaturetype.e_traceroute)+"0"].Geometry).Coordinates.First();
 
                 LineString merge = new LineString(new List<IPosition>() { FDir, first });
-                Route.Features.Add(getFeatureName(rotype, navigationfeaturetype.e_connection), new Feature(merge));
+                route.Features.Add(getFeatureName(rotype, navigationfeaturetype.e_connection), new Feature(merge));
+
             }
             catch (Exception ex)
             {
-                
-            }
-           
+                sm("Error Merging Flow direction trace with network trace " + ex.Message, MessageType.warning);
+                return;
+            }           
 
         }
-        private bool IntersectAndReplaceNetwork()
+        private bool removeIntersectingFeatures()
         {
             try
             {
                 //remove the 2 networksTraces and replace
-                IEnumerable<string> fullMatchingKeys = Route.Features.Keys.Where(currentKey => currentKey.Contains(getFeatureName(0, navigationfeaturetype.e_traceroute)));
+                IEnumerable<string> fullMatchingKeys = route.Features.Keys.Where(currentKey => currentKey.Contains(getFeatureName(0, navigationfeaturetype.e_traceroute)));
 
-                var keysToRemove = fullMatchingKeys.Where(k => Route.Features.ContainsKey(k))
-                    .GroupBy(k => Route.Features[k].Properties["nhdplus_comid"]).Where(x => x.Count() > 1).SelectMany(s => s).ToList();
+                var keysToRemove = fullMatchingKeys.Where(k => route.Features.ContainsKey(k))
+                    .GroupBy(k => route.Features[k].Properties["nhdplus_comid"]).Where(x => x.Count() > 1).SelectMany(s => s).ToList();
 
                 foreach (var key in keysToRemove)
                 {
-                    Route.Features.Remove(key);
+                    route.Features.Remove(key);
                 }//next key
 
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                sm("Error removing intersecting features " + ex.Message, MessageType.error);
                 return false;
             }
         }
