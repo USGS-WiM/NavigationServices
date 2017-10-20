@@ -12,22 +12,22 @@ namespace NavigationAgent.Resources
 
         public string ComID { get; set; }
 
-        public Feature catchment { get; set; }
-
-        public FeatureCollection FeatureCollection { get; set; }
+        public Dictionary<string,Feature> Features { get; set; }
       
-        public List<NavigationOption> Configuration { get; set; }
+        public List<NavigationOption> Configuration { get; internal set; }
+
+        public bool IncludesLimit { get; set; }
 
         #region Constructor
-        public Route(NavigationAgent.navigationtype type, List<NavigationOption> configlist)
+        public Route(NavigationAgent.navigationtype type)
         {
             this.Type = type;
-            this.Configuration = configlist;
-            FeatureCollection = new FeatureCollection();
+            Features = new Dictionary<string, Feature>();
         }
-        public Route():this(NavigationAgent.navigationtype.e_flowpath,null)
+        public Route():this(NavigationAgent.navigationtype.e_flowpath)
         {        }
         #endregion
 
     }
+   
 }

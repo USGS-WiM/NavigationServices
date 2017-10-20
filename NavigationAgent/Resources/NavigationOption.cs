@@ -25,7 +25,7 @@ namespace NavigationAgent.Resources
                 Description = "Specified lat/long/crs  navigation start location",
                 ValueType = "geojson point geometry",
 
-                Value = new Point(new Position(-84.088548, 39.79728106)) { CRS = new NamedCRS("EPSG:4326") }
+                Value = new Point(new Position(39.79728106, -84.088548)) { CRS = new NamedCRS("EPSG:4326") }
             };
         }
         public static NavigationOption EndPointLocationOption()
@@ -35,8 +35,8 @@ namespace NavigationAgent.Resources
                 ID = (int)navigationoptiontype.e_endpoint,
                 Name = "End point location",
                 Description = "Specified lat/long/crs  navigation end location",
-                ValueType = "point",
-                Value = new Point(new Position(-84.088548, 39.79728106)) { CRS = new NamedCRS("EPSG:4326") }
+                ValueType = "geojson point geometry",
+                Value = new Point(new Position(39.79728106, -84.088548)) { CRS = new NamedCRS("EPSG:4326") }
             };
         }
         public static NavigationOption DistanceOption()
@@ -68,7 +68,7 @@ namespace NavigationAgent.Resources
                 ID = 0,
                 Name = "Limit",
                 Description = "Limits network operations to within specified option",
-                ValueType = "option",
+                ValueType = "exclusiveOption",
                 Value = new List<NavigationOption>() { DistanceOption(), PolygonOption() }
             };
         }
@@ -79,7 +79,7 @@ namespace NavigationAgent.Resources
                 ID = (int)navigationoptiontype.e_navigationdirection,
                 Name = "Direction",
                 Description = "Network operation direction",
-                ValueType = "option",
+                ValueType = "exclusiveOption",
                 Value = Enum.GetNames(typeof(directiontype)).ToList()
             };
         }
@@ -97,6 +97,7 @@ namespace NavigationAgent.Resources
 
         public enum querysourcetype
         {
+            //int should match nldi querytype
             flowline = 0,
             wqpsite = 1,
             gage = 2,
@@ -104,8 +105,9 @@ namespace NavigationAgent.Resources
         }
         public enum directiontype
         {
-            upstream = 0,
-            downstream = 1
+            //int should match nldi direction type
+            downstream = 1,
+            upstream = 2,
         }
         public enum navigationoptiontype
         {

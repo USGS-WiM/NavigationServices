@@ -26,6 +26,8 @@ using NavigationAgent.Resources;
 using GeoJSON.Net.Geometry;
 using GeoJSON.Net.Feature;
 using GeoJSON.Net.CoordinateReferenceSystem;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Collections;
 
@@ -43,39 +45,23 @@ namespace NavigationAgent.ServiceAgents
         }
         #endregion
         #region Methods
-        internal FeatureCollection GetFDirTraceAsync(Point location, Feature mask = null)
+        internal Feature GetFDirTraceAsync(Feature location, Feature mask)
         {
             CRSBase crs = null;
 
             try
             {
-                if (mask.Type != GeoJSON.Net.GeoJSONObjectType.Polygon || mask.Type != GeoJSON.Net.GeoJSONObjectType.MultiPoint) mask = null;
-                //crs = location.CRS as CRSBase;
+                crs = location.CRS as CRSBase;
+                var body =  getBody(location, crs.Properties["name"].ToString().Replace("EPSG:", ""), mask);
+                
+                JObject requestResult = this.ExecuteAsync<JObject>(GetResourcrUrl(streamstatsservicetype.e_fdrtrace),new OverRideUrlEncodedContent(body),methodType.e_POST).Result;
+                LineString result = requestResult["results"][0].SelectToken("value.trace").ToObject<LineString>();
 
-                //var reqInfo = GetRequestInfo(nldiservicetype.e_catchment, new object[] { crs.Properties["name"], location.Coordinates.Latitude, location.Coordinates.Longitude });
-                //var requestResult = this.ExecuteAsync<FeatureCollection>(reqInfo).Result;
+                Feature traceFeature = new Feature(result, new Dictionary<string, object>{{ "method", "streamstats flow direction trace" },
+                                                                                {"description","traverses over flow direction raster to find downstream routing of neighboring cells" } });
+                traceFeature.CRS = location.CRS;
 
-                // this will need another service that Routes over flow direction raster using catchment as mask to catchment outlet
-                List<IPosition> coordinates = new List<IPosition>() { new Position(39.79728099057251,-84.08854544162749),
-                                                                      new Position(39.79734693545185,-84.08870100975037),
-                                                                      new Position(39.79737166476529,-84.08882439136505),
-                                                                      new Position(39.797425244913946,-84.08881366252899),
-                                                                      new Position(39.79747882502087,-84.08892095088959),
-                                                                      new Position(39.797491189655,-84.08903360366821),
-                                                                      new Position(39.797503554286884,-84.08914089202881),
-                                                                      new Position(39.79751179737358,-84.0892642736435),
-                                                                      new Position(39.79758598510945,-84.08928573131561),
-                                                                      new Position(39.79759834972431,-84.08935010433196),
-                                                                      new Position(39.79769314503106,-84.08956468105316),
-                                                                      new Position(39.79769314503106,-84.08965587615967),
-                                                                      new Position(39.79769314503106,-84.08977925777435),
-                                                                      new Position(39.79769314503106,-84.08983290195464)
-                                                                    };
-
-                var feature = new Feature(new LineString(coordinates));
-
-                var requestResult = new FeatureCollection(new List<Feature>() { feature });
-;                return requestResult;
+                return traceFeature;
             }
             catch (Exception ex)
             {
@@ -84,30 +70,24 @@ namespace NavigationAgent.ServiceAgents
         }
         #endregion
         #region HelperMethods
-        private RequestInfo GetRequestInfo(nldiservicetype requestType, object[] args = null)
-        {
-            RequestInfo requestInfo = null;
-            try
-            {
-                requestInfo = new RequestInfo(string.Format(GetResourcrUrl(requestType), args));
+        private IEnumerable<KeyValuePair<string, string>> getBody(Feature location, string srid, Feature mask) {
+            List<KeyValuePair<string, string>> body = new List<KeyValuePair<string, string>>();            
+            body.Add(new KeyValuePair<string, string>("Startpoint",JsonConvert.SerializeObject(location)));
+            body.Add(new KeyValuePair<string, string>("srid", srid));
+            body.Add(new KeyValuePair<string, string>("mask",JsonConvert.SerializeObject(mask)));
+            body.Add(new KeyValuePair<string, string>("f", "pjson"));
 
-                return requestInfo;
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
+            return body;
         }
-        private String GetResourcrUrl(nldiservicetype filetype)
+        private String GetResourcrUrl(streamstatsservicetype filetype)
         {
             try
             {
                 String resulturl = string.Empty;
                 switch (filetype)
                 {
-                    case nldiservicetype.e_catchment:
-                        resulturl = this.Resources["nhdplusWFS"];
+                    case streamstatsservicetype.e_fdrtrace:
+                        resulturl = this.Resources["fdrTrace"];
                         break;
 
                 }//end switch
@@ -119,9 +99,9 @@ namespace NavigationAgent.ServiceAgents
             }
         }
         #endregion
-        private enum nldiservicetype
+        private enum streamstatsservicetype
         {
-            e_catchment = 1
+            e_fdrtrace = 1
         }
     }
 }
