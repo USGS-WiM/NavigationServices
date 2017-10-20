@@ -60,11 +60,11 @@ namespace NavigationAgent.ServiceAgents
                 throw;
             }
         }
-        internal FeatureCollection GetNavigateAsync(string startlocation, navigateType navigationMode = navigateType.e_downstream_main)
+        internal FeatureCollection GetNavigateAsync(string startlocation, navigateType navigationMode = navigateType.e_downstream_main, Double? distance =null, querysourceType querysource = querysourceType.e_flowlines)
         {
             try
             {
-                var reqInfo = GetRequestInfo(nldiservicetype.e_navigate, new object[] {startlocation,getNavigateMode(navigationMode)});
+                var reqInfo = GetRequestInfo(nldiservicetype.e_navigate, new object[] {startlocation,getNavigateMode(navigationMode, querysource), distance?.ToString() ?? ""});
                 var requestResult = this.ExecuteAsync<FeatureCollection>(reqInfo).Result;
 
                 return requestResult;
@@ -112,21 +112,39 @@ namespace NavigationAgent.ServiceAgents
                 return string.Empty;
             }
         }
-        private string getNavigateMode(navigateType ntype)
+        private string getNavigateMode(navigateType ntype, querysourceType qtype)
         {
+            string result = "";
             switch (ntype)
             {
                 case navigateType.e_downstream_diversions:
-                    return "DD";                
+                    result = "DD";
+                    break;
                 case navigateType.e_upstream_main:
-                    return "UM";
+                    result = "UM";
+                    break;
                 case navigateType.e_upstream_tributaries:
-                    return "UT";
+                    result = "UT";
+                    break;
                 case navigateType.e_downstream_main:
                 default:
-                    return "DM";
+                    result = "DM";
+                    break;
+            }//end switch
+            string qstring = getQuerySource(qtype);
+            return string.IsNullOrEmpty(qstring) ? result : result + "/" + qstring;
+        }
+        private string getQuerySource(querysourceType qtype)
+        {
+            switch (qtype)
+            {
+                case querysourceType.e_wqpsites:
+                    return "wqp";
+                case querysourceType.e_huc12pourpoints:
+                    return "huc12pp";
+                default:
+                    return "";
             }
-
         }
         #endregion
         private enum nldiservicetype
@@ -135,11 +153,18 @@ namespace NavigationAgent.ServiceAgents
             e_navigate =2
         }
         internal enum navigateType
-        {
-            e_downstream_diversions,
-            e_downstream_main,
-            e_upstream_main,
-            e_upstream_tributaries
+        {            
+            e_downstream_main =1,            
+            e_upstream_tributaries=2,
+            e_downstream_diversions=3,
+            e_upstream_main=4
         }
+        internal enum querysourceType
+        {
+            e_flowlines =0,
+            e_wqpsites =1,
+            e_huc12pourpoints=9
+        }
+        
     }
 }

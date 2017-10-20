@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "bace4999514a28c0edfbdcdbfc6cad97e2872665"
+    "signature": "0e0af7762fe031b9c09396bcb675934b73d1a74b"
   },
   "compilationOptions": {
     "defines": [
@@ -26,7 +26,9 @@
           "Microsoft.AspNetCore.All": "2.0.0",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "2.0.0",
           "Microsoft.NETCore.App": "2.0.0",
-          "NavigationAgent": "1.0.0"
+          "NavigationAgent": "1.0.0",
+          "WiM.Analytics": "1.0.0",
+          "WiM.Services": "1.1.0"
         },
         "runtime": {
           "NavigationServices.dll": {}
@@ -3553,6 +3555,28 @@
           "ref/netstandard2.0/System.Security.Principal.Windows.dll": {}
         }
       },
+      "System.Security.SecureString/4.3.0": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "2.0.0",
+          "System.Resources.ResourceManager": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Runtime.Handles": "4.3.0",
+          "System.Runtime.InteropServices": "4.3.0",
+          "System.Security.Cryptography.Primitives": "4.3.0",
+          "System.Text.Encoding": "4.3.0",
+          "System.Threading": "4.3.0"
+        },
+        "runtimeTargets": {
+          "runtime/unix/lib/_._": {
+            "rid": "unix",
+            "assetType": "runtime"
+          },
+          "runtime/win/lib/_._": {
+            "rid": "win",
+            "assetType": "runtime"
+          }
+        }
+      },
       "System.Spatial/5.8.2": {
         "runtime": {
           "lib/netstandard1.1/System.Spatial.dll": {}
@@ -3773,6 +3797,53 @@
           "System.Xml.XPath": "4.3.0"
         }
       },
+      "WiM.Analytics/1.0.0": {
+        "dependencies": {
+          "Microsoft.AspNetCore.Http.Features": "2.0.0",
+          "WiM.Utilities.ServiceAgent": "1.1.2"
+        },
+        "runtime": {
+          "lib/netstandard2.0/WiM.Services.Analytics.dll": {}
+        },
+        "compile": {
+          "lib/netstandard2.0/WiM.Services.Analytics.dll": {}
+        }
+      },
+      "WiM.Resources/1.1.0": {
+        "runtime": {
+          "lib/netstandard2.0/WiM.Resources.dll": {}
+        },
+        "compile": {
+          "lib/netstandard2.0/WiM.Resources.dll": {}
+        }
+      },
+      "WiM.Security/1.1.0": {
+        "dependencies": {
+          "System.Security.SecureString": "4.3.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/WiM.Security.dll": {}
+        },
+        "compile": {
+          "lib/netstandard2.0/WiM.Security.dll": {}
+        }
+      },
+      "WiM.Services/1.1.0": {
+        "dependencies": {
+          "Microsoft.AspNetCore.Authentication": "2.0.0",
+          "Microsoft.AspNetCore.Http.Abstractions": "2.0.0",
+          "Microsoft.AspNetCore.Mvc": "2.0.0",
+          "Microsoft.Extensions.Options": "2.0.0",
+          "WiM.Resources": "1.1.0",
+          "WiM.Security": "1.1.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/WiM.Services.dll": {}
+        },
+        "compile": {
+          "lib/netstandard2.0/WiM.Services.dll": {}
+        }
+      },
       "WiM.Utilities.ServiceAgent/1.1.2": {
         "dependencies": {
           "Newtonsoft.Json": "10.0.3"
@@ -3802,6 +3873,7 @@
         "dependencies": {
           "GeoJSON.Net": "1.1.64",
           "Microsoft.Extensions.Options": "2.0.0",
+          "WiM.Resources": "1.1.0",
           "WiM.Utilities.ServiceAgent": "1.1.2"
         },
         "runtime": {
@@ -6026,6 +6098,13 @@
       "path": "system.security.principal.windows/4.4.0",
       "hashPath": "system.security.principal.windows.4.4.0.nupkg.sha512"
     },
+    "System.Security.SecureString/4.3.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-PnXp38O9q/2Oe4iZHMH60kinScv6QiiL2XH54Pj2t0Y6c2zKPEiAZsM/M3wBOHLNTBDFP0zfy13WN2M0qFz5jg==",
+      "path": "system.security.securestring/4.3.0",
+      "hashPath": "system.security.securestring.4.3.0.nupkg.sha512"
+    },
     "System.Spatial/5.8.2": {
       "type": "package",
       "serviceable": true,
@@ -6169,10 +6248,38 @@
       "path": "system.xml.xpath.xdocument/4.3.0",
       "hashPath": "system.xml.xpath.xdocument.4.3.0.nupkg.sha512"
     },
+    "WiM.Analytics/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-f03o0MFFbLtr6K18ISIDaixqcJQG1Hhp7UZwwFxS26TtA1bvCHU/g4IyXFFWQ+b2BqZazkWTK6F+zi1Wy/Zmlg==",
+      "path": "wim.analytics/1.0.0",
+      "hashPath": "wim.analytics.1.0.0.nupkg.sha512"
+    },
+    "WiM.Resources/1.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ue71pERpmPKBDu1y71ILhBiZUMftO2lNlttSRegVjrQulE5w2OnO9g5Dtkc3IOV4YoTmETylNq/L+wzwyVfhTg==",
+      "path": "wim.resources/1.1.0",
+      "hashPath": "wim.resources.1.1.0.nupkg.sha512"
+    },
+    "WiM.Security/1.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Hlo1pY/ItcigB7l7RqKEtdGg/cd5QLFUvNj3xyhmiefd0CCGICKT+rSbN+P/gl5w6hMIA4J2WNotwH0B3h/Sjw==",
+      "path": "wim.security/1.1.0",
+      "hashPath": "wim.security.1.1.0.nupkg.sha512"
+    },
+    "WiM.Services/1.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-zYNxevgmPCnj0hhqtpVgXRORufz+WaM/klYB+mFJLacPOg0IHWhKeWDFS8EUhC6yJh/781Z1EIQzLqCPZASHTA==",
+      "path": "wim.services/1.1.0",
+      "hashPath": "wim.services.1.1.0.nupkg.sha512"
+    },
     "WiM.Utilities.ServiceAgent/1.1.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-xa2ejJLNmgmCPeHJhT79jNK22IyX8epPxhl7LG+TPRvar9ZHUNYTRw5uIcrlxmDURKYyZFYuGVHVOmikE6f96Q==",
+      "sha512": "sha512-qK/ol264RbsMtWWcX9VTpNwcK9emDD5bpEjpxxFCYzcBQmAoVBGQffB2X0LGPF13d4sYzW8AWV02LoaxRGYzUQ==",
       "path": "wim.utilities.serviceagent/1.1.2",
       "hashPath": "wim.utilities.serviceagent.1.1.2.nupkg.sha512"
     },

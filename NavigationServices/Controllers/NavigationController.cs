@@ -75,10 +75,14 @@ namespace NavigationServices.Controllers
             {
                 var selectednetwork = agent.GetNetwork(CodeOrID);
                 if (selectednetwork == null) return new BadRequestObjectResult("Network not found.");
-                selectednetwork.Configuration = options;   
-                
+                selectednetwork.Configuration = options;
 
-                if(!agent.InitializeRoute(selectednetwork)) return new BadRequestObjectResult("One or more network options values are invalid.");
+                if (!agent.InitializeRoute(selectednetwork))
+                {
+                    sm(agent.Messages);
+                    return new BadRequestObjectResult("One or more network options values are invalid.");
+                }
+
                 var route = agent.GetNetworkRoute();
                 sm(agent.Messages);
                 return Ok(route);
