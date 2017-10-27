@@ -54,7 +54,7 @@ Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on the process for 
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](./tags). 
 
 Advance the version when adding features, fixing bugs or making minor enhancement. Follow semver principles. To add tag in git, type git tag v{major}.{minor}.{patch}. Example: git tag v2.0.5
 
@@ -66,7 +66,7 @@ To push tags to remote origin: `git push origin --tags`
 
 * **[Jeremy Newson](https://www.usgs.gov/staff-profiles/jeremy-k-newson)**  - *Lead Developer* - [USGS Web Informatics & Mapping](https://wim.usgs.gov/)
 
-See also the list of [contributors](https://github.com/NavigationServices/graphs/contributors) who participated in this project.
+See also the list of [contributors](./graphs/contributors) who participated in this project.
 
 ## License
 
