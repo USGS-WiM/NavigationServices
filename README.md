@@ -2,31 +2,27 @@
 
 
 # Navigation Services
-
 StreamStats supporting navigation REST web services used for NHDplus V2 network navigation:
 * Flow Path - Trace flow plath from a start point to downstream outlet.
 * Network Path - Trace relationship between 2 user defined points inorder to fine network relationship
 * Network Trace - Trace upstream or downstream from selected point to identified reachs and related sites to the network.
 
 ### Prerequisites
-
 Recommended IDE
 * [Visual Studio 2017](https://www.visualstudio.com/)
-
 SDK
 * [.NET Core](https://www.microsoft.com/net/core#windowscmd)
 
 ## Getting Started
-
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
 ### Installing
-
 https://help.github.com/articles/cloning-a-repository/
 
 Open the solution file (.sln) using perfered IDE.
 
 ## Building and testing
+No testing products are currently available at this time.
 
 ## [Deployment on IIS](https://docs.microsoft.com/en-us/aspnet/core/publishing/iis?tabs=aspnetcore2x) 
 see link above for detailed instructions for deploying to linux server
@@ -63,7 +59,6 @@ This project is licensed under the Creative Commons CC0 1.0 Universal License - 
 In the spirit of open source, please cite any re-use of the source code stored in this repository. Below is the suggested citation:
 
 `This project contains code produced by the Web Informatics and Mapping (WIM) team at the United States Geological Survey (USGS). As a work of the United States Government, this project is in the public domain within the United States. https://wim.usgs.gov`
-
 
 ## Acknowledgments
 * [Network-Linked Data Index](https://cida.usgs.gov/nldi/about)
