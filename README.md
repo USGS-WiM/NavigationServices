@@ -10,11 +10,9 @@ StreamStats supporting navigation REST web services used for NHDplus V2 network 
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
-
-```
-Give examples
-```
+Recommended IDE
+* [Visual Studio 2017 +](https://www.visualstudio.com/)
+* dotnet/core
 
 ## Getting Started
 
@@ -22,25 +20,23 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Installing
 
-A step by step series of examples that tell you have to get a development env running
-
-Say what the step will be
-
+Use Git or checkout with SVN using the following web URL
 ```
-Give the example
+git clone https://github.com/USGS-WiM/NSSServices.git
 ```
 
-And repeat
-
-```
-until finished
-```
+Open the solution file (.sln) using perfered IDE.
 
 ## Building and testing
+## [Deployment on IIS](https://docs.microsoft.com/en-us/aspnet/core/publishing/iis?tabs=aspnetcore2x) 
 
-Explain how to run unit tests, if applicable
+* Download and install [windows server hosting bundle](https://www.microsoft.com/net/download/core#/runtime) on the server.
+* Create new application pool specifying the .netCLR version property to "No Managed Code".
 
-## Deployment
+
+## [Deployment on Linux](https://docs.microsoft.com/en-us/aspnet/core/publishing/apache-proxy)
+
+
 
 Add additional notes about how to deploy this on a live system. **Do not include any credentials, IP addresses, or other sensitive information**
 
@@ -66,7 +62,7 @@ To push tags to remote origin: `git push origin --tags`
 
 * **[Jeremy Newson](https://www.usgs.gov/staff-profiles/jeremy-k-newson)**  - *Lead Developer* - [USGS Web Informatics & Mapping](https://wim.usgs.gov/)
 
-See also the list of [contributors](./graphs/contributors) who participated in this project.
+See also the list of [contributors](../../graphs/contributors) who participated in this project.
 
 ## License
 
@@ -80,7 +76,8 @@ In the spirit of open source, please cite any re-use of the source code stored i
 
 ## Acknowledgments
 
-* GeoJson.Net https://github.com/GeoJSON-Net/GeoJSON.Net
+* [Network-Linked Data Index](https://cida.usgs.gov/nldi/about)
+* [GeoJson.Net](https://github.com/GeoJSON-Net/GeoJSON.Net)
 
 ## About WIM
 * This project authored by the [USGS WIM team](https://wim.usgs.gov)

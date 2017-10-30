@@ -4,7 +4,8 @@
     "organization": "U.S. Geological Survey",
     "description": "StreamStats custome REST Navigation services that leverage USGS NLDI services and flow direction rasters to navigate NHD network",
     "version": "v0.0.0",
-    "status": "preliminary",
+    "statusOptionsURL":"https://github.com/GSA/code-gov-web/blob/master/src/assets/schemas/2.0.0.json#L144-L152",
+	"status": "preliminary",	
 
     "permissions": {
       "usageType": "openSource",
@@ -25,8 +26,8 @@
     "laborHours": null,
 
     "tags": [
-      "streamstats",
-      "services",
+      "Streamstats",
+      "Services",
 	  "REST",
 	  "Navigation"
     ],
