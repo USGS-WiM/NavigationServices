@@ -9,12 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 using WiM.Services.Middleware;
 using WiM.Services.Analytics;
 using WiM.Utilities.ServiceAgent;
+using WiM.Services.Resources;
 
 namespace NavigationServices
 {
-#warning https://stackify.com/net-core-loggerfactory-use-correctly/
-#warning https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware?tabs=aspnetcore2x
-
     public class Startup
     {
         public Startup(IHostingEnvironment env)
@@ -40,6 +38,7 @@ namespace NavigationServices
             services.AddOptions();
             //Configure injectable obj
             services.Configure<NetworkSettings>(Configuration.GetSection("NetworkSettings"));
+            services.Configure<APIConfigSettings>(Configuration.GetSection("APIConfigSettings"));
 
             // Add framework services
             services.AddScoped<INavigationAgent, NavigationAgent.NavigationAgent>();

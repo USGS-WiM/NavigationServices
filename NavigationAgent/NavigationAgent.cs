@@ -51,6 +51,8 @@ namespace NavigationAgent
         #region Properties
         private bool isRouteInitialized = false;
         private NLDIServiceAgent nldiAgent { get; set; }
+#warning this is a temperary agent until gages are migrated to production in NLDI
+        private NLDIServiceAgent nldiAgent2 { get; set; }
         private StreamStatsServiceAgent ssAgent { get; set; }
         private List<Network> availableNetworks { get; set; }
         private Route route { get; set; }
@@ -59,7 +61,8 @@ namespace NavigationAgent
         #region Constructor
         public NavigationAgent(IOptions<NetworkSettings> NetworkSettings)
         {
-            nldiAgent = new NLDIServiceAgent(NetworkSettings.Value.NLDI);
+            nldiAgent = new NLDIServiceAgent(NetworkSettings.Value.NLDI);            
+            nldiAgent2 = new NLDIServiceAgent(new Resource() { baseurl = "https://cida-test.er.usgs.gov", resources = NetworkSettings.Value.NLDI.resources });
             ssAgent = new StreamStatsServiceAgent(NetworkSettings.Value.StreamStats);
             availableNetworks = NetworkSettings.Value.Networks;
             Messages = new List<Message>();
@@ -339,7 +342,7 @@ namespace NavigationAgent
             {
                 List<Feature> traceItems = null;
                 string nameprefix = "";
-                FeatureCollection traceFC = this.nldiAgent.GetNavigateAsync(this.route.ComID,(NLDIServiceAgent.navigateType)tracetype, distance,(NLDIServiceAgent.querysourceType) source);
+                FeatureCollection traceFC = this.nldiAgent2.GetNavigateAsync(this.route.ComID,(NLDIServiceAgent.navigateType)tracetype, distance,(NLDIServiceAgent.querysourceType) source);
 
                 if (traceFC == null)
                     throw new Exception("Network trace from nldi agent is null. ComID: "+this.route.ComID);

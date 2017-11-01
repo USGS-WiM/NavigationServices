@@ -64,6 +64,7 @@ namespace NavigationServices.Controllers
             }
             catch (Exception ex)
             {
+                sm(agent.Messages);
                 return HandleException(ex);
             }
         }
@@ -89,6 +90,7 @@ namespace NavigationServices.Controllers
             }
             catch (Exception ex)
             {
+                sm(agent.Messages);
                 return HandleException(ex);
             }
         }
