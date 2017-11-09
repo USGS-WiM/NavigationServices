@@ -28,6 +28,7 @@ using GeoJSON.Net.Feature;
 using GeoJSON.Net.CoordinateReferenceSystem;
 using System.Linq;
 using System.Collections;
+using WiM.Utilities.Resources;
 
 namespace NavigationAgent.ServiceAgents
 {

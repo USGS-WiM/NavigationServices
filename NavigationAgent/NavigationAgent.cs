@@ -34,6 +34,7 @@ using WiM.Resources;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Converters;
+using WiM.Utilities.Resources;
 
 
 namespace NavigationAgent

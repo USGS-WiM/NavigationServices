@@ -55,8 +55,7 @@ namespace NavigationServices.Controllers
         {
             //returns list of available Navigations
             try
-            {
-                
+            {                
                 var selectednetwork = agent.GetNetwork(CodeOrID);
                 if (selectednetwork == null) return new BadRequestObjectResult("Network not found.");
                 sm(agent.Messages);

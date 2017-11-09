@@ -30,6 +30,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Collections;
+using WiM.Utilities.Resources;
 
 namespace NavigationAgent.ServiceAgents
 {

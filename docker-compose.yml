@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  navigationservices:
+    image: navigationservices
+    build:
+      context: ./NavigationServices
+      dockerfile: Dockerfile

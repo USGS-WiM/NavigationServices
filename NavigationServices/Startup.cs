@@ -10,6 +10,7 @@ using WiM.Services.Middleware;
 using WiM.Services.Analytics;
 using WiM.Utilities.ServiceAgent;
 using WiM.Services.Resources;
+using NavigationServices.Filters;
 
 namespace NavigationServices
 {
@@ -51,8 +52,10 @@ namespace NavigationServices
                                                                  .AllowCredentials());
             });
 
-            services.AddMvc(options => { options.RespectBrowserAcceptHeader = true; })                               
-                                .AddJsonOptions(options => loadJsonOptions(options));
+            services.AddMvc(options => { options.RespectBrowserAcceptHeader = true;
+                options.Filters.Add(new NavigationHypermedia());})                               
+                                .AddJsonOptions(options => loadJsonOptions(options));                                
+                                
         }     
 
         // Method to configure the HTTP request pipeline.
@@ -63,7 +66,7 @@ namespace NavigationServices
 
             app.UseCors("CorsPolicy");
             app.Use_Analytics();
-            app.UseX_Messages();           
+            app.UseX_Messages();
 
             app.UseMvc();            
         }
