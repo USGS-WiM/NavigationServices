@@ -6,6 +6,11 @@ using Microsoft.Extensions.Logging;
 using NavigationAgent;
 using NavigationAgent.Resources;
 using Microsoft.AspNetCore.Mvc;
+using WiM.Services.Middleware;
+using WiM.Services.Analytics;
+using WiM.Utilities.ServiceAgent;
+using WiM.Services.Resources;
+using NavigationServices.Filters;
 
 namespace NavigationServices
 {
@@ -27,17 +32,18 @@ namespace NavigationServices
 
         public IConfigurationRoot Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        //Method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             //add functionality to inject IOptions<T>
             services.AddOptions();
             //Configure injectable obj
             services.Configure<NetworkSettings>(Configuration.GetSection("NetworkSettings"));
+            services.Configure<APIConfigSettings>(Configuration.GetSection("APIConfigSettings"));
 
             // Add framework services
             services.AddScoped<INavigationAgent, NavigationAgent.NavigationAgent>();
-
+            services.AddScoped<IAnalyticsAgent, GoogleAnalyticsAgent>((gaa)=> new GoogleAnalyticsAgent(Configuration["AnalyticsKey"]));
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder => builder.AllowAnyOrigin()
@@ -46,18 +52,23 @@ namespace NavigationServices
                                                                  .AllowCredentials());
             });
 
-            services.AddMvc(options => { options.RespectBrowserAcceptHeader = true; })                               
-                                .AddJsonOptions(options => loadJsonOptions(options));
+            services.AddMvc(options => { options.RespectBrowserAcceptHeader = true;
+                options.Filters.Add(new NavigationHypermedia());})                               
+                                .AddJsonOptions(options => loadJsonOptions(options));                                
+                                
         }     
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        // Method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
-            // global policy - assign here or on each controller
+
             app.UseCors("CorsPolicy");
-            app.UseMvc();
+            app.Use_Analytics();
+            app.UseX_Messages();
+
+            app.UseMvc();            
         }
 
         #region Helper Methods
