@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "40e0fa72fa9fbd2f92668f69984b6dd9b2bc6c64"
+    "signature": "2db66a912adf01526a0b5d793e10ffdeb43789ee"
   },
   "compilationOptions": {
     "defines": [
@@ -3854,6 +3854,17 @@
           "lib/netstandard2.0/WiM.Services.dll": {}
         }
       },
+      "WiM.Spatial/1.0.0": {
+        "dependencies": {
+          "GeoJSON.Net": "1.1.64"
+        },
+        "runtime": {
+          "lib/netstandard2.0/WiM.Spatial.dll": {}
+        },
+        "compile": {
+          "lib/netstandard2.0/WiM.Spatial.dll": {}
+        }
+      },
       "WiM.Utilities.ServiceAgent/1.1.2": {
         "dependencies": {
           "Newtonsoft.Json": "10.0.3"
@@ -3885,6 +3896,7 @@
           "Microsoft.Extensions.Options": "2.0.0",
           "WiM.Hypermedia": "1.1.0",
           "WiM.Resources": "1.1.0",
+          "WiM.Spatial": "1.0.0",
           "WiM.Utilities.ServiceAgent": "1.1.2"
         },
         "runtime": {
@@ -6293,6 +6305,13 @@
       "sha512": "sha512-2QMiveZWvCSd4SR5nC3/F8EyQSCnLPbTnqBboTxn94HwgVRJU+CrVOPI2/jpYRqJB2grYL5Kqo2lC2vLKnNA6Q==",
       "path": "wim.services/1.1.0",
       "hashPath": "wim.services.1.1.0.nupkg.sha512"
+    },
+    "WiM.Spatial/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-oZl0tj7bsnwyS6Q+Q9RoAM9dkboa7bkNE3fU5qcdx5PlubgboYGwEDiy+s/vCZwvnJ0G5RJ8VNWv9GStwo8H0g==",
+      "path": "wim.spatial/1.0.0",
+      "hashPath": "wim.spatial.1.0.0.nupkg.sha512"
     },
     "WiM.Utilities.ServiceAgent/1.1.2": {
       "type": "package",

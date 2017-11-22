@@ -55,9 +55,9 @@ namespace NavigationAgent.Resources
             return new NavigationOption()
             {
                 ID = (int)navigationoptiontype.e_trunkatingpolygon,
-                Name = "Polygon",
-                Description = "Limits network operations to within specified polygon",
-                ValueType = "geojson polygon geometry",
+                Name = "Polygon geometry",
+                Description = "Limits network operations to within specified feature",
+                ValueType = "geojson polygon or multipolygon geometry used to limit the response. See https://tools.ietf.org/html/rfc7946#section-3.1 for more details",
                 Value = "undefined"
             };
         }

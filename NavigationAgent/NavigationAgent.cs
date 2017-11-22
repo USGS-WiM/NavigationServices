@@ -35,7 +35,9 @@ using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Converters;
 using WiM.Utilities.Resources;
-
+using GeoJSON.Net;
+using GeoJSON.Net.Converters;
+using WiM.Spatial;
 
 namespace NavigationAgent
 {
@@ -58,6 +60,8 @@ namespace NavigationAgent
         private List<Network> availableNetworks { get; set; }
         private Route route { get; set; }
         public List<Message> Messages { get; private set; }
+        private IGeometryObject clipGeometry { get; set; }
+
         #endregion
         #region Constructor
         public NavigationAgent(IOptions<NetworkSettings> NetworkSettings)
@@ -118,7 +122,6 @@ namespace NavigationAgent
         #region HELPER METHODS
         private void sm(string message, MessageType type = MessageType.info)
         {
-
             this.Messages.Add(new Message() { msg=message, type = type });
         }
         private void loadFlowPath(routeoptiontype rotype = routeoptiontype.e_start) {
@@ -129,6 +132,12 @@ namespace NavigationAgent
             double? distance = route.Configuration.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_distance)?.Value ?? null;
             if (!loadNetworkTrace(rotype,distance: distance)) Console.WriteLine("FlowDirection failed to trace.");
             mergeFlowDirectionNetworkTrace(rotype);
+
+            if (route.Configuration.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_trunkatingpolygon) != null)
+            {
+
+            }
+
 
         }
         private void loadNetworkPath() {
@@ -265,7 +274,7 @@ namespace NavigationAgent
                         // is valid geojson point
                         Point point = JsonConvert.DeserializeObject<Point>(JsonConvert.SerializeObject(option.Value));
                         if (point == null) break;                        
-                        this.route.Features.Add(getFeatureName((routeoptiontype)option.ID, navigationfeaturetype.e_point), new Feature(point) { CRS = point.CRS });
+                        addRouteFeature(getFeatureName((routeoptiontype)option.ID, navigationfeaturetype.e_point), new Feature(point) { CRS = point.CRS });
                         return true;
 
                     case NavigationOption.navigationoptiontype.e_distance:
@@ -273,10 +282,12 @@ namespace NavigationAgent
                         if (Double.TryParse(option.Value.ToString(), out result)) return true;
                         break;
                     case NavigationOption.navigationoptiontype.e_trunkatingpolygon:
-                        // is valid geojson polygon  
-                        if (JsonConvert.DeserializeObject<Polygon>(JsonConvert.SerializeObject(option.Value)) != null ||
-                            JsonConvert.DeserializeObject<MultiPolygon>(JsonConvert.SerializeObject(option.Value)) != null) return true;
-                        break;
+                        // is valid geojson polygon
+                        IGeometryObject poly = JsonConvert.DeserializeObject<IGeometryObject>(JsonConvert.SerializeObject(option.Value), new GeometryConverter());
+                        if (poly == null) break;
+                        this.clipGeometry = poly;
+                        return true;
+
                     case NavigationOption.navigationoptiontype.e_navigationdirection:
                         if (Enum.IsDefined(typeof(NavigationOption.directiontype), option.Value)) return true;
                         break;
@@ -307,7 +318,7 @@ namespace NavigationAgent
                 if (string.IsNullOrEmpty(comid))
                     throw new Exception(String.Format("nldi catchment does not contain property featureid X {0}, Y {1}", startpoint.Coordinates.Longitude, startpoint.Coordinates.Latitude));
                 this.route.ComID = comid;
-                this.route.Features.Add(getFeatureName(rotype,navigationfeaturetype.e_catchment), localCatchment.Features.FirstOrDefault());
+                addRouteFeature(getFeatureName(rotype,navigationfeaturetype.e_catchment), localCatchment.Features.FirstOrDefault());
                 sm("Catchement valid, ComID: " + comid);
                 return true;
             }
@@ -327,7 +338,7 @@ namespace NavigationAgent
                 if (fldrTrace == null)
                     throw new Exception("Flow direction trace object null.");
 
-                this.route.Features.Add(getFeatureName(rotype, navigationfeaturetype.e_fdrroute), fldrTrace);
+                addRouteFeature(getFeatureName(rotype, navigationfeaturetype.e_fdrroute), fldrTrace);
 
                 return true;
             }
@@ -359,7 +370,7 @@ namespace NavigationAgent
                 }
                 for (int i = 0; i < traceItems.Count(); i++)
                 {
-                    this.route.Features.Add(nameprefix+i, traceItems[i]);
+                    addRouteFeature(nameprefix+i, traceItems[i]);
                 }//next item
             
                 return true;
@@ -456,6 +467,43 @@ namespace NavigationAgent
             }//end switch
         }
 
+        private void addRouteFeature(string name, Feature feature)
+        {
+            List<GeoJSONObjectType> applicableTypes = new List<GeoJSONObjectType> { GeoJSONObjectType.LineString, GeoJSONObjectType.Point };
+            if (clipGeometry != null && applicableTypes.Contains(feature.Geometry.Type))
+            {
+                switch (feature.Geometry.Type)
+                {
+                    case GeoJSON.Net.GeoJSONObjectType.Point:
+                        var pnt = (Point)feature.Geometry;
+                        switch (clipGeometry.Type)
+                        {
+                            case GeoJSON.Net.GeoJSONObjectType.Polygon:
+                                if (!((Polygon)clipGeometry).ContainsPoint(pnt)) return;
+                                break;
+                            case GeoJSON.Net.GeoJSONObjectType.MultiPolygon:
+                                if (!((MultiPolygon)clipGeometry).ContainsPoint(pnt)) return;
+                                break;
+                        }//end switch
+
+                        break;
+                    case GeoJSON.Net.GeoJSONObjectType.LineString:
+                        List<Point> lpnt = ((LineString)feature.Geometry).Coordinates.Select(p=>new Point(p)).ToList();
+                        switch (clipGeometry.Type)
+                        {
+                            case GeoJSON.Net.GeoJSONObjectType.Polygon:
+                                if (!lpnt.Any(p=>((Polygon)clipGeometry).ContainsPoint(p))) return;
+                                break;
+                            case GeoJSON.Net.GeoJSONObjectType.MultiPolygon:
+                                if (!lpnt.Any(p => ((MultiPolygon)clipGeometry).ContainsPoint(p))) return;
+                                break;
+                        }//end switch
+
+                        break;
+                }//end switch
+            } 
+            this.route.Features.Add(name, feature);
+        }
         #endregion
         #region Enumerations
         public enum navigationtype
@@ -484,3 +532,10 @@ namespace NavigationAgent
         #endregion
     }
 }
+
+
+//http://csharphelper.com/blog/2014/07/determine-whether-a-point-is-inside-a-polygon-in-c/
+//https://github.com/Infernus666/Raycast/blob/master/Raycast.js
+//https://stackoverflow.com/questions/29283871/using-a-raycasting-algorithm-for-point-in-polygon-test-with-latitude-longitude-c
+//https://stackoverflow.com/questions/4243042/c-sharp-point-in-polygon
+//http://csharphelper.com/blog/2016/01/clip-a-line-segment-to-a-polygon-in-c/
