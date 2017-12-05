@@ -61,6 +61,7 @@ namespace NavigationAgent
         private Route route { get; set; }
         public List<Message> Messages { get; private set; }
         private IGeometryObject clipGeometry { get; set; }
+        private Double? distanceLimit { get; set; }
 
         #endregion
         #region Constructor
@@ -128,9 +129,8 @@ namespace NavigationAgent
             
             if (!loadCatchment(rotype)) throw new Exception("Catchment failed to load.");
             if (!loadFlowDirectionTrace(rotype)) Console.WriteLine("FlowDirection failed to trace.");
-
-            double? distance = route.Configuration.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_distance)?.Value ?? null;
-            if (!loadNetworkTrace(rotype,distance: distance)) Console.WriteLine("FlowDirection failed to trace.");
+            
+            if (!loadNetworkTrace(rotype,distance: distanceLimit)) Console.WriteLine("FlowDirection failed to trace.");
             mergeFlowDirectionNetworkTrace(rotype);
 
             if (route.Configuration.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_trunkatingpolygon) != null)
@@ -154,11 +154,9 @@ namespace NavigationAgent
             var queries = ((List<string>)route.Configuration.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_querysource).Value)
                 .Select(x=> { Enum.TryParse(x, out NavigationOption.querysourcetype sType); return sType; }).ToList();
             
-            double? distance = route.Configuration.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_distance)?.Value ?? null;
-            
             foreach (var item in queries)
             {
-                if (!loadNetworkTrace(routeoptiontype.e_start, dtype,distance,item)) sm("Failed to trace network for "+item,MessageType.error);
+                if (!loadNetworkTrace(routeoptiontype.e_start, dtype,distanceLimit,item)) sm("Failed to trace network for "+item,MessageType.error);
             }//next query 
 
             if (dtype == NavigationOption.directiontype.downstream && queries.Contains(NavigationOption.querysourcetype.flowline))
@@ -274,8 +272,10 @@ namespace NavigationAgent
 
                     case NavigationOption.navigationoptiontype.e_distance:
                         double result;
-                        if (Double.TryParse(option.Value.ToString(), out result)) return true;
-                        break;
+                        if (!Double.TryParse(option.Value.ToString(), out result)) break;
+                        this.distanceLimit = result;
+                        return true;
+
                     case NavigationOption.navigationoptiontype.e_trunkatingpolygon:
                         // is valid geojson polygon
                         IGeometryObject poly = JsonConvert.DeserializeObject<IGeometryObject>(JsonConvert.SerializeObject(option.Value), new GeometryConverter());
