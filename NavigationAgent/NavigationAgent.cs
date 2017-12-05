@@ -212,7 +212,7 @@ namespace NavigationAgent
 
                         //limit
                         option = options.FirstOrDefault(x => x.ID == 0);
-                        if (option != null || !isValid(option)) return false;
+                        if (option != null && !isValid(option)) return false;
 
                         break;
                     case navigationtype.e_networkpath:
@@ -224,7 +224,7 @@ namespace NavigationAgent
 
                         //limit
                         option = options.FirstOrDefault(x => x.ID == 0);
-                        if (option != null || !isValid(option)) return false;
+                        if (option != null && !isValid(option)) return false;
 
                         break;
                     case navigationtype.e_networktrace:
