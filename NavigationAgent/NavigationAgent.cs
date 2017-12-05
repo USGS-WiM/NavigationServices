@@ -37,7 +37,7 @@ using Newtonsoft.Json.Converters;
 using WiM.Utilities.Resources;
 using GeoJSON.Net;
 using GeoJSON.Net.Converters;
-using WiM.Spatial;
+using WiM.Extensions;
 
 namespace NavigationAgent
 {
@@ -212,11 +212,9 @@ namespace NavigationAgent
                         option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_startpoint);
                         if (option == null || !isValid(option)) return false;
 
-                        //optional
-                        option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_distance);
-                        if (option != null && !isValid(option)) return false;
-                        option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_trunkatingpolygon);
-                        if (option != null && !isValid(option)) return false;
+                        //limit
+                        option = options.FirstOrDefault(x => x.ID == 0);
+                        if (option != null || !isValid(option)) return false;
 
                         break;
                     case navigationtype.e_networkpath:
@@ -226,13 +224,11 @@ namespace NavigationAgent
                         option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_endpoint);
                         if (option == null || !isValid(option)) return false;
 
-                        //optional
-                        option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_distance);
-                        if (option != null && !isValid(option)) return false;
-                        option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_trunkatingpolygon);
-                        if (option != null && !isValid(option)) return false;
-                        break;
+                        //limit
+                        option = options.FirstOrDefault(x => x.ID == 0);
+                        if (option != null || !isValid(option)) return false;
 
+                        break;
                     case navigationtype.e_networktrace:
                         // requires valid startpoint and upstream/dowstream and data query
                         option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_startpoint);
@@ -242,11 +238,10 @@ namespace NavigationAgent
                         option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_querysource);
                         if (option == null || !isValid(option)) return false;
 
-                        //optional
-                        option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_distance);
+                        //limit
+                        option = options.FirstOrDefault(x => x.ID == 0);
                         if (option != null && !isValid(option)) return false;
-                        option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_trunkatingpolygon);
-                        if (option != null && !isValid(option)) return false;
+
                         break;
                     default:
                         break;
@@ -296,6 +291,14 @@ namespace NavigationAgent
                         option.Value = ((JArray)option.Value).ToObject<List<string>>();
                         if(((List<string>)option.Value).All(s=> Enum.IsDefined(typeof(NavigationOption.querysourcetype), s))) return true;
                         break;
+
+                    default:// limit
+                        var value = JsonConvert.DeserializeObject<NavigationOption>(JsonConvert.SerializeObject(option.Value));
+                        if ((value.ID == (int)NavigationOption.navigationoptiontype.e_distance ||
+                             value.ID == (int)NavigationOption.navigationoptiontype.e_trunkatingpolygon) &&
+                             isValid(value)) return true;
+                        break;
+
                 }
                 sm(option.Name + " is invalid. Please provide a valid " + option.Name, MessageType.warning);
                 return false;
@@ -532,10 +535,3 @@ namespace NavigationAgent
         #endregion
     }
 }
-
-
-//http://csharphelper.com/blog/2014/07/determine-whether-a-point-is-inside-a-polygon-in-c/
-//https://github.com/Infernus666/Raycast/blob/master/Raycast.js
-//https://stackoverflow.com/questions/29283871/using-a-raycasting-algorithm-for-point-in-polygon-test-with-latitude-longitude-c
-//https://stackoverflow.com/questions/4243042/c-sharp-point-in-polygon
-//http://csharphelper.com/blog/2016/01/clip-a-line-segment-to-a-polygon-in-c/

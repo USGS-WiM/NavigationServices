@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "2db66a912adf01526a0b5d793e10ffdeb43789ee"
+    "signature": "975eac727c53ef4e63d544c940ad2378925d2e4e"
   },
   "compilationOptions": {
     "defines": [
@@ -27,7 +27,7 @@
           "Microsoft.Extensions.Options.ConfigurationExtensions": "2.0.0",
           "Microsoft.NETCore.App": "2.0.0",
           "NavigationAgent": "1.0.0",
-          "WiM.Analytics": "1.0.0",
+          "WiM.Analytics": "1.1.0",
           "WiM.Hypermedia": "1.1.0",
           "WiM.Services": "1.1.0"
         },
@@ -3798,10 +3798,10 @@
           "System.Xml.XPath": "4.3.0"
         }
       },
-      "WiM.Analytics/1.0.0": {
+      "WiM.Analytics/1.1.0": {
         "dependencies": {
           "Microsoft.AspNetCore.Http.Features": "2.0.0",
-          "WiM.Utilities.ServiceAgent": "1.1.2"
+          "WiM.Utilities.ServiceAgent": "1.1.0"
         },
         "runtime": {
           "lib/netstandard2.0/WiM.Services.Analytics.dll": {}
@@ -3854,7 +3854,7 @@
           "lib/netstandard2.0/WiM.Services.dll": {}
         }
       },
-      "WiM.Spatial/1.0.0": {
+      "WiM.Spatial/1.1.0": {
         "dependencies": {
           "GeoJSON.Net": "1.1.64"
         },
@@ -3865,7 +3865,7 @@
           "lib/netstandard2.0/WiM.Spatial.dll": {}
         }
       },
-      "WiM.Utilities.ServiceAgent/1.1.2": {
+      "WiM.Utilities.ServiceAgent/1.1.0": {
         "dependencies": {
           "Newtonsoft.Json": "10.0.3"
         },
@@ -3896,8 +3896,8 @@
           "Microsoft.Extensions.Options": "2.0.0",
           "WiM.Hypermedia": "1.1.0",
           "WiM.Resources": "1.1.0",
-          "WiM.Spatial": "1.0.0",
-          "WiM.Utilities.ServiceAgent": "1.1.2"
+          "WiM.Spatial": "1.1.0",
+          "WiM.Utilities.ServiceAgent": "1.1.0"
         },
         "runtime": {
           "NavigationAgent.dll": {}
@@ -6271,54 +6271,54 @@
       "path": "system.xml.xpath.xdocument/4.3.0",
       "hashPath": "system.xml.xpath.xdocument.4.3.0.nupkg.sha512"
     },
-    "WiM.Analytics/1.0.0": {
+    "WiM.Analytics/1.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-+4BQPzdmIH9cVpArn2tF1N5Y7fwZ+KNAOB/ZLtKWiXfrFxkfABCbDWykUYtFf5qNcIqzOL3dUTAu574jV2tmqA==",
-      "path": "wim.analytics/1.0.0",
-      "hashPath": "wim.analytics.1.0.0.nupkg.sha512"
+      "sha512": "sha512-gN/Gpdnj9C9hpBMhSO1/Fkm4nMLfn4j2YClo/EelHLFB8nN0z+bzsTofCIoxyZSSF7Jau5NFkIttPBRLjgoB5Q==",
+      "path": "wim.analytics/1.1.0",
+      "hashPath": "wim.analytics.1.1.0.nupkg.sha512"
     },
     "WiM.Hypermedia/1.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-/s5VsvUn+/EgbkdintemOUfkOXhRuy3lryaNJufVbBpXdn4fyriVA4fUHLae4Xxg4XuGBNjQ4ErpOpGE41WMmA==",
+      "sha512": "sha512-GfpLAmwyWh4mLqYRfQHSn+GR69vCjD3Oc1jdSyi+5Bx3IIxc71Jk73Ruf8c4gTkGvi0ll4YoLnoLlettApPodA==",
       "path": "wim.hypermedia/1.1.0",
       "hashPath": "wim.hypermedia.1.1.0.nupkg.sha512"
     },
     "WiM.Resources/1.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ue71pERpmPKBDu1y71ILhBiZUMftO2lNlttSRegVjrQulE5w2OnO9g5Dtkc3IOV4YoTmETylNq/L+wzwyVfhTg==",
+      "sha512": "sha512-PZMV7lEbinzY4vVr9HuWDSI0gl0TZOXVWsaXLqvj9w5FiOEDx0nurJAueIQTiAp+QPHxAAQK02RB8siLOqZcYA==",
       "path": "wim.resources/1.1.0",
       "hashPath": "wim.resources.1.1.0.nupkg.sha512"
     },
     "WiM.Security/1.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Hlo1pY/ItcigB7l7RqKEtdGg/cd5QLFUvNj3xyhmiefd0CCGICKT+rSbN+P/gl5w6hMIA4J2WNotwH0B3h/Sjw==",
+      "sha512": "sha512-vACnKaNcTRK19gnoIQg7So2wrzGrKAhuP79D1Qxw6X2iBhIjl6rCiwAphmD2BBscYwhU2sBEl1jem84BmdQyug==",
       "path": "wim.security/1.1.0",
       "hashPath": "wim.security.1.1.0.nupkg.sha512"
     },
     "WiM.Services/1.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-2QMiveZWvCSd4SR5nC3/F8EyQSCnLPbTnqBboTxn94HwgVRJU+CrVOPI2/jpYRqJB2grYL5Kqo2lC2vLKnNA6Q==",
+      "sha512": "sha512-ZP0H+2aG0Aq8FdV5EssAF40DozRqDky+Hj9Q5pL+LvKQ3QykPtdkQdB5SxeoT0Gu4smAsgtjOJbPXh7hNmHOBg==",
       "path": "wim.services/1.1.0",
       "hashPath": "wim.services.1.1.0.nupkg.sha512"
     },
-    "WiM.Spatial/1.0.0": {
+    "WiM.Spatial/1.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-oZl0tj7bsnwyS6Q+Q9RoAM9dkboa7bkNE3fU5qcdx5PlubgboYGwEDiy+s/vCZwvnJ0G5RJ8VNWv9GStwo8H0g==",
-      "path": "wim.spatial/1.0.0",
-      "hashPath": "wim.spatial.1.0.0.nupkg.sha512"
+      "sha512": "sha512-NINLm1QQilzUw3BId1O9FYO3aie5Mh4h//lrnTGhvSJEyNcF7kylzmDABGVD/rKlxxQ6Visj/QrqaDrwOmUvJQ==",
+      "path": "wim.spatial/1.1.0",
+      "hashPath": "wim.spatial.1.1.0.nupkg.sha512"
     },
-    "WiM.Utilities.ServiceAgent/1.1.2": {
+    "WiM.Utilities.ServiceAgent/1.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-gMnLx95OE89Uzz5i0vKpfhn4UrWxI4LhIW0eLFyXyFLLhH57xoijVRbDn9yn1oHxw2YnawTa9opgoPS1ASpGxA==",
-      "path": "wim.utilities.serviceagent/1.1.2",
-      "hashPath": "wim.utilities.serviceagent.1.1.2.nupkg.sha512"
+      "sha512": "sha512-ZTLNICqXzR/lPkLYmi5bYlcQgho41aTjKqfWJxzy21NHAk/jKEpG9uY2u/i0eppJFxmhk+JQmGycJDmlAJjShA==",
+      "path": "wim.utilities.serviceagent/1.1.0",
+      "hashPath": "wim.utilities.serviceagent.1.1.0.nupkg.sha512"
     },
     "WindowsAzure.Storage/8.1.4": {
       "type": "package",
