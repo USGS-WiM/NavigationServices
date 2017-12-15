@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "975eac727c53ef4e63d544c940ad2378925d2e4e"
+    "signature": "1e6308bbd50852717d527f16d6bff458170ea62a"
   },
   "compilationOptions": {
     "defines": [
@@ -29,7 +29,7 @@
           "NavigationAgent": "1.0.0",
           "WiM.Analytics": "1.1.0",
           "WiM.Hypermedia": "1.1.0",
-          "WiM.Services": "1.1.0"
+          "WiM.Services": "1.1.2"
         },
         "runtime": {
           "NavigationServices.dll": {}
@@ -3837,7 +3837,7 @@
           "lib/netstandard2.0/WiM.Security.dll": {}
         }
       },
-      "WiM.Services/1.1.0": {
+      "WiM.Services/1.1.2": {
         "dependencies": {
           "Microsoft.AspNetCore.Authentication": "2.0.0",
           "Microsoft.AspNetCore.Http.Abstractions": "2.0.0",
@@ -6299,12 +6299,12 @@
       "path": "wim.security/1.1.0",
       "hashPath": "wim.security.1.1.0.nupkg.sha512"
     },
-    "WiM.Services/1.1.0": {
+    "WiM.Services/1.1.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ZP0H+2aG0Aq8FdV5EssAF40DozRqDky+Hj9Q5pL+LvKQ3QykPtdkQdB5SxeoT0Gu4smAsgtjOJbPXh7hNmHOBg==",
-      "path": "wim.services/1.1.0",
-      "hashPath": "wim.services.1.1.0.nupkg.sha512"
+      "sha512": "sha512-XW3PjF6IFGwmJ6wwapUSx20fEsfpcFGkcudxHx3QLQUMs8UsbZfBaP6dNOLtltcX7OtEL5b+P9TNsMy45LI2Tg==",
+      "path": "wim.services/1.1.2",
+      "hashPath": "wim.services.1.1.2.nupkg.sha512"
     },
     "WiM.Spatial/1.1.0": {
       "type": "package",
