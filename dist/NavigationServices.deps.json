@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "1e6308bbd50852717d527f16d6bff458170ea62a"
+    "signature": "911b62a4fab470d1e6d3a1525162f3967c46e410"
   },
   "compilationOptions": {
     "defines": [
@@ -28,8 +28,8 @@
           "Microsoft.NETCore.App": "2.0.0",
           "NavigationAgent": "1.0.0",
           "WiM.Analytics": "1.1.0",
-          "WiM.Hypermedia": "1.1.0",
-          "WiM.Services": "1.1.2"
+          "WiM.Hypermedia": "1.1.1",
+          "WiM.Services": "1.1.3"
         },
         "runtime": {
           "NavigationServices.dll": {}
@@ -3810,7 +3810,10 @@
           "lib/netstandard2.0/WiM.Services.Analytics.dll": {}
         }
       },
-      "WiM.Hypermedia/1.1.0": {
+      "WiM.Hypermedia/1.1.1": {
+        "dependencies": {
+          "WiM.Resources": "1.1.1"
+        },
         "runtime": {
           "lib/netstandard2.0/WiM.Hypermedia.dll": {}
         },
@@ -3818,7 +3821,7 @@
           "lib/netstandard2.0/WiM.Hypermedia.dll": {}
         }
       },
-      "WiM.Resources/1.1.0": {
+      "WiM.Resources/1.1.1": {
         "runtime": {
           "lib/netstandard2.0/WiM.Resources.dll": {}
         },
@@ -3837,14 +3840,14 @@
           "lib/netstandard2.0/WiM.Security.dll": {}
         }
       },
-      "WiM.Services/1.1.2": {
+      "WiM.Services/1.1.3": {
         "dependencies": {
           "Microsoft.AspNetCore.Authentication": "2.0.0",
           "Microsoft.AspNetCore.Http.Abstractions": "2.0.0",
           "Microsoft.AspNetCore.Mvc": "2.0.0",
           "Microsoft.Extensions.Options": "2.0.0",
-          "WiM.Hypermedia": "1.1.0",
-          "WiM.Resources": "1.1.0",
+          "WiM.Hypermedia": "1.1.1",
+          "WiM.Resources": "1.1.1",
           "WiM.Security": "1.1.0"
         },
         "runtime": {
@@ -3894,8 +3897,8 @@
         "dependencies": {
           "GeoJSON.Net": "1.1.64",
           "Microsoft.Extensions.Options": "2.0.0",
-          "WiM.Hypermedia": "1.1.0",
-          "WiM.Resources": "1.1.0",
+          "WiM.Hypermedia": "1.1.1",
+          "WiM.Resources": "1.1.1",
           "WiM.Spatial": "1.1.0",
           "WiM.Utilities.ServiceAgent": "1.1.0"
         },
@@ -6278,19 +6281,19 @@
       "path": "wim.analytics/1.1.0",
       "hashPath": "wim.analytics.1.1.0.nupkg.sha512"
     },
-    "WiM.Hypermedia/1.1.0": {
+    "WiM.Hypermedia/1.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-GfpLAmwyWh4mLqYRfQHSn+GR69vCjD3Oc1jdSyi+5Bx3IIxc71Jk73Ruf8c4gTkGvi0ll4YoLnoLlettApPodA==",
-      "path": "wim.hypermedia/1.1.0",
-      "hashPath": "wim.hypermedia.1.1.0.nupkg.sha512"
+      "sha512": "sha512-p9adDxtU+PnNxNHn1kA4EjtnzEAzdJxdtC9V6voSppz7gO3l3KlbUKyzZ+HbLsc7D6597YnD0N8geBzAqU7eaw==",
+      "path": "wim.hypermedia/1.1.1",
+      "hashPath": "wim.hypermedia.1.1.1.nupkg.sha512"
     },
-    "WiM.Resources/1.1.0": {
+    "WiM.Resources/1.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-PZMV7lEbinzY4vVr9HuWDSI0gl0TZOXVWsaXLqvj9w5FiOEDx0nurJAueIQTiAp+QPHxAAQK02RB8siLOqZcYA==",
-      "path": "wim.resources/1.1.0",
-      "hashPath": "wim.resources.1.1.0.nupkg.sha512"
+      "sha512": "sha512-DcXx2BNZSR65I/jiRWqhIC5Nj3DjelE/dZIGbESaKSTUaBJU6FdAvRAvgJ2NllRtRATNz3F/RPmhAWrf/6wHgg==",
+      "path": "wim.resources/1.1.1",
+      "hashPath": "wim.resources.1.1.1.nupkg.sha512"
     },
     "WiM.Security/1.1.0": {
       "type": "package",
@@ -6299,12 +6302,12 @@
       "path": "wim.security/1.1.0",
       "hashPath": "wim.security.1.1.0.nupkg.sha512"
     },
-    "WiM.Services/1.1.2": {
+    "WiM.Services/1.1.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-XW3PjF6IFGwmJ6wwapUSx20fEsfpcFGkcudxHx3QLQUMs8UsbZfBaP6dNOLtltcX7OtEL5b+P9TNsMy45LI2Tg==",
-      "path": "wim.services/1.1.2",
-      "hashPath": "wim.services.1.1.2.nupkg.sha512"
+      "sha512": "sha512-hteQUPGrlkqyHqpiHX6g0PSCeFOcpkfAF0WXrwOZOo9rchGnNfxW2XIrYQuOeUkambQ/iHb1rynZQ0B6gMg5AA==",
+      "path": "wim.services/1.1.3",
+      "hashPath": "wim.services.1.1.3.nupkg.sha512"
     },
     "WiM.Spatial/1.1.0": {
       "type": "package",

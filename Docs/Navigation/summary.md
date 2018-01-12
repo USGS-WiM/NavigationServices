@@ -1,2 +1,1 @@
-## summary
-The Navigation resource represents the nhdplus v2 network navigation objects bla bla bla
+The Navigation resource provides the network connectivity componenets in order to  bla bla bla
