@@ -15,7 +15,6 @@ There are 6 different configureation objects required for various resources. Eac
 Required and optional configuration is returned by each response as shown in the following sample or by selecting the below load response button below;
 #### Request
 ``` 
-codesample:
 	$.ajax({
 		url: url,
 		success: function(resultData) { 
