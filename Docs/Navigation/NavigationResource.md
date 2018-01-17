@@ -2,7 +2,8 @@
 Returns the selected Navigation resource and any configureation options required to execute the route method. 
 
 There are 6 different configureation objects required for various resources. Each of which follow the following structure:
-```{
+```
+{
 	"id":1,
 	"name":"Start point location",
 	"required":true,
