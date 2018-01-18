@@ -1,5 +1,5 @@
 ## Introduction
-In cooperation with the [Network-Linked Data Index](https://cida.usgs.gov/nldi/about), the navigation services was developed to bla, bla bla =--=-=-=-
+In cooperation with the [Network-Linked Data Index](https://cida.usgs.gov/nldi/about), the navigation services were developed to provide network connectivity for the [StreamStats](https://streamstats.usgs.gov) application. These services, coupled with others, such as gages services or time of travel services all users to estimate flows at ungages sites based and upstream and downstream gages or identifying intakes downstream of a water quality hazard.
 
 Navigation Services provides three national navigation options (flow path, network path, and network trace) for navigating the national NHDplus v2 medium resolution datasets. 
 * Flow path (also known as raindrop path) navigation
