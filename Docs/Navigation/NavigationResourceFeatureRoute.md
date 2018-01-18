@@ -1,4 +1,4 @@
-### NavigationResource Feature Route
+### Navigation Resource Feature Route
 Returns the route response features of the requested navigation resource as a [geojson](http://geojson.org/) feature collection.
 
 The following, provides an example of requesting a Navigation Trace Route. 
