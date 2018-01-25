@@ -1,8 +1,9 @@
 ### Navigation Resource
-Returns the selected Navigation resource and any configureation options required to execute the route method. 
+Returns the selected Navigation resource and any configuration options required to execute the route method. 
 
-There are 6 different configureation objects required for various resources. Each of which follow the following structure:
-```{
+There are 6 different configuration objects required for various resources. Each of which follow the following structure:
+```
+{
 	"id":1,
 	"name":"Start point location",
 	"required":true,
@@ -14,7 +15,8 @@ There are 6 different configureation objects required for various resources. Eac
 
 Required and optional configuration is returned by each response as shown in the following sample or by selecting the below load response button below;
 #### Request
-```$.ajax({
+``` 
+	$.ajax({
 		url: url,
 		success: function(resultData) { 
 			var geojson = resultData;

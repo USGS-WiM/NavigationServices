@@ -3,7 +3,8 @@ Returns an array of available navigation resources currently provided by the ser
 
 Required and optional configuration is returned by each response as shown in the following sample or by selecting the below load response button below;
 #### Request
-```$.ajax({
+```
+	$.ajax({
 		url: url,
 		success: function(resultData) { 
 			var geojson = resultData;
