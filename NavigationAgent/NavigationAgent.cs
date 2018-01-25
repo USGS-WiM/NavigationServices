@@ -21,23 +21,21 @@
 //
 // 
 
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using NavigationAgent.ServiceAgents;
-using NavigationAgent.Resources;
-using Microsoft.Extensions.Options;
-using GeoJSON.Net.Geometry;
-using Newtonsoft.Json;
-using GeoJSON.Net.Feature;
-using WiM.Resources;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Converters;
-using WiM.Utilities.Resources;
 using GeoJSON.Net;
 using GeoJSON.Net.Converters;
+using GeoJSON.Net.Feature;
+using GeoJSON.Net.Geometry;
+using Microsoft.Extensions.Options;
+using NavigationAgent.Resources;
+using NavigationAgent.ServiceAgents;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using WiM.Extensions;
+using WiM.Resources;
+using WiM.Utilities.Resources;
 
 namespace NavigationAgent
 {
@@ -70,7 +68,8 @@ namespace NavigationAgent
             nldiAgent = new NLDIServiceAgent(NetworkSettings.Value.NLDI);            
             nldiAgent2 = new NLDIServiceAgent(new Resource() { baseurl = "https://cida-test.er.usgs.gov", resources = NetworkSettings.Value.NLDI.resources });
             ssAgent = new StreamStatsServiceAgent(NetworkSettings.Value.StreamStats);
-            availableNetworks = NetworkSettings.Value.Networks;
+            //deep clone to ensure objects stay stateless
+            availableNetworks = JsonConvert.DeserializeObject<List<Network>>(JsonConvert.SerializeObject(NetworkSettings.Value.Networks));
             Messages = new List<Message>();
         }
         #endregion
@@ -534,4 +533,5 @@ namespace NavigationAgent
 
         #endregion
     }
+
 }
