@@ -4,7 +4,7 @@ Returns the route response features of the requested navigation resource as a [g
 The following, provides an example of requesting a Navigation Trace Route. 
 
 **Network Trace (upstream)**
-provides the user configuration options for upstream or downstream trace and available data selections, such as gages, dams, and water quality sites, etc. These options are selected from the Navigation Resource response and submitted as the Navigation Resource Feature Route's requesting body, as shown below:
+provides the user configuration options for upstream or downstream trace and available data selections, such as gages, dams, and water quality sites, etc. These options are selected from the Navigation Resource response and submitted as the Navigation Resource feature route's requesting body, as shown below:
 
 ```
 var configuration = 
