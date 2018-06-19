@@ -1,5 +1,12 @@
 The Navigation resource provides the network connectivity components required for network navigation.
 
-**Available Navigation Resources** provides the resources available, such as flow path, network path and network trace. 
-**Navigation Resource** provides a brief description and applicable configuration for each resource. 
-**Navigation Resource Feature Route** provides the routed result base on the selected resource and configuration.
+#### Navigation Usage
+The Navigation resources are intended to be used in the following sequential steps:
+
+
+1) Request the [Available Navigation Resources](./#/Navigation/GET/AvailableNavigationResources)
+
+2) Using the ID or code from step 1, request [Navigation Resource](./#/Navigation/GET/NavigationResource)
+
+3) Configure the response from step 2 as requesting body for [Navigation Resource Feature Route](./#/Navigation/UNSPECIFIED/NavigationResourceFeatureRoute) supplied in step to as request.
+

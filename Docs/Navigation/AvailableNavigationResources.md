@@ -1,16 +1,6 @@
 ## Available Navigation Resources
 Returns an array of available navigation resources currently provided by the services
 
-Required and optional configuration is returned by each response as shown in the following sample or by selecting the below load response button below;
-#### Request
-```
-	$.ajax({
-		url: url,
-		success: function(resultData) { 
-			var geojson = resultData;
-		},
-		error: function() {
-			control.state('error');
-		}
-	});
-```
+#### Request Example
+The REST URL section below displays the example url and can be queried by selecting the blue "Load response" Button.
+
