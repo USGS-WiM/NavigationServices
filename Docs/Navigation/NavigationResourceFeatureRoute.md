@@ -1,14 +1,14 @@
 ### Navigation Resource Feature Route
 Returns the route response features of the requested navigation resource as a [geojson](http://geojson.org/) feature collection.
 
-### Request Example
+#### Request Example
 The REST URL section below displays the example url and table 1 lists a the set of example parameters that has be used to simulate a request from [Navigation Resource](./#/Navigation/GET/NavigationResource) request.
 
 Table 1. Example of Resource services parameter names and values.
 
 | Parameter     | Description   | Value |
 | ------------- |:-------------:| -----:|
-| CodeOrID    | unique resource code or ID from [Available Navigation Resource](./#/Navigation/GET/AvailableNavigationResources) | 1  |
+| CodeOrID    | unique resource code or ID from [Available Navigation Resource](./#/Navigation/GET/AvailableNavigationResources) | 3  |
 
 From the previous request response the following, provides an example of requesting a Navigation Trace Route. 
 
