@@ -12,35 +12,7 @@ Table 1. Example of Resource services parameter names and values.
 
 From the previous request response the following, provides an example of requesting a Navigation Trace Route. 
 
-The Network Trace response provides the user configuration options for upstream or downstream trace and available data selections, such as gages, dams, and water quality sites, etc. These options are selected from the Navigation Resource response and submitted as the Navigation Resource feature route's requesting bodies payload, as shown below:
-
-```
-var configuration = 
-[{
-	"id":1,
-	"name":"Start point location",
-	"required":true,
-	"description":"Specified lat/long/crs  navigation start location",
-	"valueType":"geojson point geometry",
-	"value":{"type":"Point","coordinates":[-72.87935256958009,42.45284793716157],"crs":{"properties":{"name":"EPSG:4326"},"type":"name"}}
-},
-{
-	"id":5,
-	"name":"Direction",
-	"required":true,
-	"description":"Network operation direction",
-	"valueType":"exclusiveOption",
-	"value":"upstream"
-},
-{
-	"id":6,
-	"name":"Query Source",
-	"required":true,
-	"description":"Specified data source to query",
-	"valueType":"option","value":["flowline","wqpsite"]
-}];
-``` 
-The HTTP REST Request can be made by using an HTTP POST, similar to the following AJAX request:
+The Network Trace response provides the user configuration options for upstream or downstream trace and available data selections, such as gages, dams, and water quality sites, etc. These options are selected from the Navigation Resource response and submitted in the requesting HTTP body payload. The HTTP REST Request can be made by using an HTTP POST, similar to the following request:
 ```
 POST /navigationservices/navigation/3/route HTTP/1.1
 Host: streamstats.usgs.gov
@@ -72,6 +44,7 @@ content-length: 576
 	"valueType":"option","value":["flowline","wqpsite"]
 }]
 ```
+
 The previous request response provides a geojson Feature collection of polylines and points and are rendered similar to the following figure:
 
 <img alt="UpstreamFlowTrace.jpg" 
