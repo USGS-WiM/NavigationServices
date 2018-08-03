@@ -36,8 +36,8 @@ namespace NavigationServices.Filters
             {
                 case "Network":
                     results = new List<Link>();
-                    results.Add(new Link(BaseURI, "self by id", this.URLQuery +"/"+ ((Network)entity).ID, refType.GET));
-                    results.Add(new Link(BaseURI, "self by code", this.URLQuery + "/" + ((Network)entity).Code, refType.GET));
+                    results.Add(new Link(BaseURI, "self by id", this.URLQuery +"/"+ ((Network)entity).ID, WiM.Resources.refType.GET));
+                    results.Add(new Link(BaseURI, "self by code", this.URLQuery + "/" + ((Network)entity).Code, WiM.Resources.refType.GET));
                     break;
 
                 default:
@@ -55,7 +55,7 @@ namespace NavigationServices.Filters
             {
                 case "Network":
                     results = new List<Link>();
-                    results.Add(new Link(BaseURI, "Route the networks using supplied configuration options.", this.URLQuery + "/route", refType.POST));
+                    results.Add(new Link(BaseURI, "Route the networks using supplied configuration options.", this.URLQuery + "/route", WiM.Resources.refType.POST));
 
                     break;                
                 default:

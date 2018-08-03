@@ -21,23 +21,21 @@
 //
 // 
 
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using NavigationAgent.ServiceAgents;
-using NavigationAgent.Resources;
-using Microsoft.Extensions.Options;
-using GeoJSON.Net.Geometry;
-using Newtonsoft.Json;
-using GeoJSON.Net.Feature;
-using WiM.Resources;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Converters;
-using WiM.Utilities.Resources;
 using GeoJSON.Net;
 using GeoJSON.Net.Converters;
-using WiM.Spatial;
+using GeoJSON.Net.Feature;
+using GeoJSON.Net.Geometry;
+using Microsoft.Extensions.Options;
+using NavigationAgent.Resources;
+using NavigationAgent.ServiceAgents;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using WiM.Extensions;
+using WiM.Resources;
+using WiM.Utilities.Resources;
 
 namespace NavigationAgent
 {
@@ -61,6 +59,7 @@ namespace NavigationAgent
         private Route route { get; set; }
         public List<Message> Messages { get; private set; }
         private IGeometryObject clipGeometry { get; set; }
+        private Double? distanceLimit { get; set; }
 
         #endregion
         #region Constructor
@@ -69,7 +68,8 @@ namespace NavigationAgent
             nldiAgent = new NLDIServiceAgent(NetworkSettings.Value.NLDI);            
             nldiAgent2 = new NLDIServiceAgent(new Resource() { baseurl = "https://cida-test.er.usgs.gov", resources = NetworkSettings.Value.NLDI.resources });
             ssAgent = new StreamStatsServiceAgent(NetworkSettings.Value.StreamStats);
-            availableNetworks = NetworkSettings.Value.Networks;
+            //deep clone to ensure objects stay stateless
+            availableNetworks = JsonConvert.DeserializeObject<List<Network>>(JsonConvert.SerializeObject(NetworkSettings.Value.Networks));
             Messages = new List<Message>();
         }
         #endregion
@@ -128,9 +128,8 @@ namespace NavigationAgent
             
             if (!loadCatchment(rotype)) throw new Exception("Catchment failed to load.");
             if (!loadFlowDirectionTrace(rotype)) Console.WriteLine("FlowDirection failed to trace.");
-
-            double? distance = route.Configuration.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_distance)?.Value ?? null;
-            if (!loadNetworkTrace(rotype,distance: distance)) Console.WriteLine("FlowDirection failed to trace.");
+            
+            if (!loadNetworkTrace(rotype,distance: distanceLimit)) Console.WriteLine("FlowDirection failed to trace.");
             mergeFlowDirectionNetworkTrace(rotype);
 
             if (route.Configuration.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_trunkatingpolygon) != null)
@@ -154,11 +153,9 @@ namespace NavigationAgent
             var queries = ((List<string>)route.Configuration.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_querysource).Value)
                 .Select(x=> { Enum.TryParse(x, out NavigationOption.querysourcetype sType); return sType; }).ToList();
             
-            double? distance = route.Configuration.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_distance)?.Value ?? null;
-            
             foreach (var item in queries)
             {
-                if (!loadNetworkTrace(routeoptiontype.e_start, dtype,distance,item)) sm("Failed to trace network for "+item,MessageType.error);
+                if (!loadNetworkTrace(routeoptiontype.e_start, dtype,distanceLimit,item)) sm("Failed to trace network for "+item,MessageType.error);
             }//next query 
 
             if (dtype == NavigationOption.directiontype.downstream && queries.Contains(NavigationOption.querysourcetype.flowline))
@@ -212,10 +209,8 @@ namespace NavigationAgent
                         option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_startpoint);
                         if (option == null || !isValid(option)) return false;
 
-                        //optional
-                        option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_distance);
-                        if (option != null && !isValid(option)) return false;
-                        option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_trunkatingpolygon);
+                        //limit
+                        option = options.FirstOrDefault(x => x.ID == 0);
                         if (option != null && !isValid(option)) return false;
 
                         break;
@@ -226,13 +221,11 @@ namespace NavigationAgent
                         option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_endpoint);
                         if (option == null || !isValid(option)) return false;
 
-                        //optional
-                        option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_distance);
+                        //limit
+                        option = options.FirstOrDefault(x => x.ID == 0);
                         if (option != null && !isValid(option)) return false;
-                        option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_trunkatingpolygon);
-                        if (option != null && !isValid(option)) return false;
-                        break;
 
+                        break;
                     case navigationtype.e_networktrace:
                         // requires valid startpoint and upstream/dowstream and data query
                         option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_startpoint);
@@ -242,11 +235,10 @@ namespace NavigationAgent
                         option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_querysource);
                         if (option == null || !isValid(option)) return false;
 
-                        //optional
-                        option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_distance);
+                        //limit
+                        option = options.FirstOrDefault(x => x.ID == 0);
                         if (option != null && !isValid(option)) return false;
-                        option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_trunkatingpolygon);
-                        if (option != null && !isValid(option)) return false;
+
                         break;
                     default:
                         break;
@@ -279,8 +271,10 @@ namespace NavigationAgent
 
                     case NavigationOption.navigationoptiontype.e_distance:
                         double result;
-                        if (Double.TryParse(option.Value.ToString(), out result)) return true;
-                        break;
+                        if (!Double.TryParse(option.Value.ToString(), out result)) break;
+                        this.distanceLimit = result;
+                        return true;
+
                     case NavigationOption.navigationoptiontype.e_trunkatingpolygon:
                         // is valid geojson polygon
                         IGeometryObject poly = JsonConvert.DeserializeObject<IGeometryObject>(JsonConvert.SerializeObject(option.Value), new GeometryConverter());
@@ -296,6 +290,14 @@ namespace NavigationAgent
                         option.Value = ((JArray)option.Value).ToObject<List<string>>();
                         if(((List<string>)option.Value).All(s=> Enum.IsDefined(typeof(NavigationOption.querysourcetype), s))) return true;
                         break;
+
+                    default:// limit
+                        var value = JsonConvert.DeserializeObject<NavigationOption>(JsonConvert.SerializeObject(option.Value));
+                        if ((value.ID == (int)NavigationOption.navigationoptiontype.e_distance ||
+                             value.ID == (int)NavigationOption.navigationoptiontype.e_trunkatingpolygon) &&
+                             isValid(value)) return true;
+                        break;
+
                 }
                 sm(option.Name + " is invalid. Please provide a valid " + option.Name, MessageType.warning);
                 return false;
@@ -531,11 +533,5 @@ namespace NavigationAgent
 
         #endregion
     }
+
 }
-
-
-//http://csharphelper.com/blog/2014/07/determine-whether-a-point-is-inside-a-polygon-in-c/
-//https://github.com/Infernus666/Raycast/blob/master/Raycast.js
-//https://stackoverflow.com/questions/29283871/using-a-raycasting-algorithm-for-point-in-polygon-test-with-latitude-longitude-c
-//https://stackoverflow.com/questions/4243042/c-sharp-point-in-polygon
-//http://csharphelper.com/blog/2016/01/clip-a-line-segment-to-a-polygon-in-c/

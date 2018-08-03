@@ -6,15 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Controllers\ConfigurationController.cs" />
+    <Compile Remove="Controllers\Configuration2Controller.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0" />
-    <PackageReference Include="WiM.Analytics" Version="1.0.0" />
-    <PackageReference Include="WiM.Hypermedia" Version="1.1.0" />
-    <PackageReference Include="WiM.Services" Version="1.1.0" />
+    <PackageReference Include="WiM.Analytics" Version="1.1.0" />
+    <PackageReference Include="WiM.Hypermedia" Version="1.1.1" />
+    <PackageReference Include="WiM.Services" Version="1.1.3" />
   </ItemGroup>
 
   <ItemGroup>
