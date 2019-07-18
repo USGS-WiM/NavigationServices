@@ -6,7 +6,7 @@
 //       01234567890123456789012345678901234567890123456789012345678901234567890
 //-------+---------+---------+---------+---------+---------+---------+---------+
 
-// copyright:   2017 WiM - USGS
+// copyright:   2017 WIM - USGS
 
 //    authors:  Jeremy K. Newson USGS Web Informatics and Mapping
 //              
@@ -21,14 +21,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using WiM.Utilities.ServiceAgent;
+using WIM.Utilities.ServiceAgent;
 using NavigationAgent.Resources;
 using GeoJSON.Net.Geometry;
 using GeoJSON.Net.Feature;
 using GeoJSON.Net.CoordinateReferenceSystem;
 using System.Linq;
 using System.Collections;
-using WiM.Utilities.Resources;
+using WIM.Utilities.Resources;
 
 namespace NavigationAgent.ServiceAgents
 {

@@ -6,7 +6,7 @@
 //       01234567890123456789012345678901234567890123456789012345678901234567890
 //-------+---------+---------+---------+---------+---------+---------+---------+
 
-// copyright:   2017 WiM - USGS
+// copyright:   2017 WIM - USGS
 
 //    authors:  Jeremy K. Newson USGS Web Informatics and Mapping
 //              
@@ -21,9 +21,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using WiM.Hypermedia;
-using WiM.Services.Filters;
+using WIM.Hypermedia;
+using WIM.Services.Filters;
 using NavigationAgent.Resources;
+using WIM.Resources;
 
 namespace NavigationServices.Filters
 {
@@ -36,8 +37,8 @@ namespace NavigationServices.Filters
             {
                 case "Network":
                     results = new List<Link>();
-                    results.Add(new Link(BaseURI, "self by id", this.URLQuery +"/"+ ((Network)entity).ID, WiM.Resources.refType.GET));
-                    results.Add(new Link(BaseURI, "self by code", this.URLQuery + "/" + ((Network)entity).Code, WiM.Resources.refType.GET));
+                    results.Add(Hyperlinks.Generate(BaseURI, "self by id", this.URLQuery +"/"+ ((Network)entity).ID, WIM.Resources.refType.GET));
+                    results.Add(Hyperlinks.Generate(BaseURI, "self by code", this.URLQuery + "/" + ((Network)entity).Code, WIM.Resources.refType.GET));
                     break;
 
                 default:
@@ -55,7 +56,7 @@ namespace NavigationServices.Filters
             {
                 case "Network":
                     results = new List<Link>();
-                    results.Add(new Link(BaseURI, "Route the networks using supplied configuration options.", this.URLQuery + "/route", WiM.Resources.refType.POST));
+                    results.Add(Hyperlinks.Generate(BaseURI, "Route the networks using supplied configuration options.", this.URLQuery + "/route", WIM.Resources.refType.POST));
 
                     break;                
                 default:

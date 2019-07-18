@@ -6,7 +6,7 @@
 //       01234567890123456789012345678901234567890123456789012345678901234567890
 //-------+---------+---------+---------+---------+---------+---------+---------+
 
-// copyright:   2017 WiM - USGS
+// copyright:   2017 WIM - USGS
 
 //    authors:  Jeremy K. Newson USGS Web Informatics and Mapping
 //              
@@ -21,7 +21,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using WiM.Utilities.ServiceAgent;
+using WIM.Utilities.ServiceAgent;
 using NavigationAgent.Resources;
 using GeoJSON.Net.Geometry;
 using GeoJSON.Net.Feature;
@@ -30,7 +30,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Collections;
-using WiM.Utilities.Resources;
+using WIM.Utilities.Resources;
 
 namespace NavigationAgent.ServiceAgents
 {
@@ -55,7 +55,7 @@ namespace NavigationAgent.ServiceAgents
                 crs = location.CRS as CRSBase;
                 var body =  getBody(location, crs.Properties["name"].ToString().Replace("EPSG:", ""), mask);
                 
-                JObject requestResult = this.ExecuteAsync<JObject>(GetResourcrUrl(streamstatsservicetype.e_fdrtrace),new OverRideUrlEncodedContent(body),methodType.e_POST).Result;
+                JObject requestResult = this.ExecuteAsync<JObject>(GetResourcrUrl(streamstatsservicetype.e_fdrtrace),new OverRideUrlEncodedContent(body),methodType.e_POST,contentType.JSON).Result;
                 LineString result = requestResult["results"][0].SelectToken("value.trace").ToObject<LineString>();
 
                 Feature traceFeature = new Feature(result, new Dictionary<string, object>{{ "method", "streamstats flow direction trace" },
