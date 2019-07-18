@@ -59,7 +59,7 @@ namespace NavigationAgent
 #warning this is a temperary agent until gages are migrated to production in NLDI
         private NLDIServiceAgent nldiAgent2 { get; set; }
         private StreamStatsServiceAgent ssAgent { get; set; }
-        private NavigationDBOps NavDBOps { get; set; }
+        private string NavDBConnectionstring { get; set; }
         private List<Network> availableNetworks { get; set; }
         private Route route { get; set; }
         private readonly IDictionary<Object, Object> _messages;
@@ -74,7 +74,7 @@ namespace NavigationAgent
             nldiAgent = new NLDIServiceAgent(NetworkSettings.Value.NLDI);            
             nldiAgent2 = new NLDIServiceAgent(new Resource() { baseurl = "https://cida-test.er.usgs.gov", resources = NetworkSettings.Value.NLDI.resources });
             ssAgent = new StreamStatsServiceAgent(NetworkSettings.Value.StreamStats);
-            NavDBOps = new NavigationDBOps(NetworkSettings.Value.DBConnectionString);
+            NavDBConnectionstring = NetworkSettings.Value.DBConnectionString;
             //deep clone to ensure objects stay stateless
             availableNetworks = JsonConvert.DeserializeObject<List<Network>>(JsonConvert.SerializeObject(NetworkSettings.Value.Networks));
             
@@ -405,18 +405,28 @@ namespace NavigationAgent
         {
             try
             {
-                List<Int32> comids = traceItems.Select(i => Convert.ToInt32(i.Properties["nhdplus_comid"])).ToList();
-                var properties = NavDBOps.GetAvailableProperties(comids);
+                using (var NavDBOps = new NavigationDBOps(this.NavDBConnectionstring))
+                {
+                    DateTime startDateTime = DateTime.Now;
 
-                traceItems.ForEach(i => {
-                    var comid = Convert.ToInt32(i.Properties["nhdplus_comid"]);
-                    var VAA = properties.FirstOrDefault(p => p.ContainsKey("COMID") && Convert.ToInt32(p["COMID"]) == comid);
+                    List<Int32> comids = traceItems.Select(i => Convert.ToInt32(i.Properties["nhdplus_comid"])).ToList();
+                    var properties = NavDBOps.GetAvailableProperties(comids);
+                    DateTime DBDateTime = DateTime.Now;
 
-                    foreach (var item in VAA.Where(p => p.Key != "COMID" && p.Key != "ID"))
+                    traceItems.ForEach(i =>
                     {
-                        i.Properties.Add(item.Key, item.Value);
-                    }//next
-                });
+                        var comid = Convert.ToInt32(i.Properties["nhdplus_comid"]);
+                        var VAA = properties.FirstOrDefault(p => p.ContainsKey("COMID") && Convert.ToInt32(p["COMID"]) == comid);
+
+                        foreach (var item in VAA.Where(p => p.Key != "COMID" && p.Key != "ID"))
+                        {
+                            i.Properties.Add(item.Key, item.Value);
+                        }//next
+                    });
+                    DateTime associatedDateTime = DateTime.Now;
+                    sm($"count {comids.Count()}; time to query: {(DBDateTime - startDateTime).Seconds} sec, time to associate to features {(associatedDateTime - DBDateTime).Seconds} sec.");
+
+                }
             }
             catch (Exception ex)
             {
