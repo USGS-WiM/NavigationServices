@@ -351,8 +351,16 @@ namespace NavigationAgent
                 Feature catchmentMask = route.Features[getFeatureName(rotype, navigationfeaturetype.e_catchment)];
 
                 Feature fldrTrace = this.ssAgent.GetFDirTraceAsync(startpoint, catchmentMask);
+
+                
                 if (fldrTrace == null)
                     throw new Exception("Flow direction trace object null.");
+
+                if (IncludeVAA)
+                {
+
+                    LoadVAAProperties(new List<Feature>() { fldrTrace });
+                }
 
                 addRouteFeature(getFeatureName(rotype, navigationfeaturetype.e_fdrroute), fldrTrace);
 

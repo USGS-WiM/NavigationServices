@@ -59,7 +59,8 @@ namespace NavigationAgent.ServiceAgents
                 LineString result = requestResult["results"][0].SelectToken("value.trace").ToObject<LineString>();
 
                 Feature traceFeature = new Feature(result, new Dictionary<string, object>{{ "method", "streamstats flow direction trace" },
-                                                                                {"description","traverses over flow direction raster to find downstream routing of neighboring cells" } });
+                                                                                {"description","traverses over flow direction raster to find downstream routing of neighboring cells, feature information/properties inherited from nhd catchment." },
+                                                                                {"nhdplus_comid",mask.Properties["featureid"] } });
                 traceFeature.CRS = location.CRS;
 
                 return traceFeature;
