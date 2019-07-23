@@ -143,8 +143,10 @@ namespace NavigationAgent.ServiceAgents
                     return "wqp";
                 case querysourceType.e_huc12pourpoints:
                     return "huc12pp";
-                case querysourceType.e_gage:
+                case querysourceType.e_ssgage:
                     return "ss_gages";
+                case querysourceType.e_nwisgage:
+                    return "nwissite";
                 default:
                     return "";
             }
@@ -166,7 +168,8 @@ namespace NavigationAgent.ServiceAgents
         {
             e_flowlines =0,
             e_wqpsites =1,
-            e_gage =2,
+            e_ssgage =2,
+            e_nwisgage =3,
             e_huc12pourpoints=9
         }
         

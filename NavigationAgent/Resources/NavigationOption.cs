@@ -116,8 +116,8 @@ namespace NavigationAgent.Resources
             //int should match nldi querytype
             flowline = 0,
             wqpsite = 1,
-            gage = 2,
-            bridge = 3
+            streamStatsgage = 2,
+            nwisgage=3
         }
         public enum directiontype
         {
