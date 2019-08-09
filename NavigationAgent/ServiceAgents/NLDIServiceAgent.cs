@@ -32,19 +32,19 @@ using WIM.Utilities.Resources;
 
 namespace NavigationAgent.ServiceAgents
 {
-    internal class NLDIServiceAgent : ServiceAgentBase
+    public class NLDIServiceAgent : ServiceAgentBase
     {
         #region Properties
         private Dictionary<string, string> Resources { get; set; }
         #endregion
         #region Constructor
-        internal NLDIServiceAgent(Resource nldiResource) : base(nldiResource.baseurl)
+        public NLDIServiceAgent(Resource nldiResource) : base(nldiResource.baseurl)
         {
             this.Resources = nldiResource.resources;
         }
         #endregion
         #region Methods
-        internal FeatureCollection GetLocalCatchmentAsync(Point location) {
+        public FeatureCollection GetLocalCatchmentAsync(Point location) {
             CRSBase crs = null;
 
             try

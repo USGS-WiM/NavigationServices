@@ -1,10 +1,11 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.2",
-    "signature": "f30d3745f40dd9c2391d7f5ae5d0e2367f809d8d"
+    "signature": "eb463f4001e3ae00500e9303ba0f7f10ad152f39"
   },
   "compilationOptions": {
     "defines": [
+      "DEBUG",
       "TRACE",
       "RELEASE",
       "NETCOREAPP",
@@ -14,17 +15,17 @@
     "platform": "",
     "allowUnsafe": false,
     "warningsAsErrors": false,
-    "optimize": true,
+    "optimize": false,
     "keyFile": "",
     "emitEntryPoint": true,
     "xmlDoc": false,
-    "debugType": "portable"
+    "debugType": "full"
   },
   "targets": {
     ".NETCoreApp,Version=v2.2": {
       "NavigationServices/1.0.0": {
         "dependencies": {
-          "Microsoft.ApplicationInsights.AspNetCore": "2.7.0",
+          "Microsoft.ApplicationInsights.AspNetCore": "2.7.1",
           "Microsoft.AspNetCore": "2.2.0",
           "Microsoft.AspNetCore.Mvc": "2.2.0",
           "Microsoft.Extensions.Configuration": "2.2.0",
@@ -72,7 +73,7 @@
           "lib/netstandard2.0/Microsoft.ApplicationInsights.dll": {}
         }
       },
-      "Microsoft.ApplicationInsights.AspNetCore/2.7.0": {
+      "Microsoft.ApplicationInsights.AspNetCore/2.7.1": {
         "dependencies": {
           "Microsoft.ApplicationInsights": "2.10.0",
           "Microsoft.ApplicationInsights.DependencyCollector": "2.10.0",
@@ -88,8 +89,8 @@
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.ApplicationInsights.AspNetCore.dll": {
-            "assemblyVersion": "2.7.0.0",
-            "fileVersion": "2.7.0.0"
+            "assemblyVersion": "2.7.1.0",
+            "fileVersion": "2.7.1.0"
           }
         },
         "compile": {
@@ -1933,7 +1934,7 @@
           "lib/netstandard1.3/Newtonsoft.Json.Bson.dll": {}
         }
       },
-      "Npgsql/4.0.7": {
+      "Npgsql/4.0.8": {
         "dependencies": {
           "System.Memory": "4.5.3",
           "System.Runtime.CompilerServices.Unsafe": "4.5.2",
@@ -1942,8 +1943,8 @@
         },
         "runtime": {
           "lib/netstandard2.0/Npgsql.dll": {
-            "assemblyVersion": "4.0.7.0",
-            "fileVersion": "4.0.7.0"
+            "assemblyVersion": "4.0.8.0",
+            "fileVersion": "4.0.8.0"
           }
         },
         "compile": {
@@ -3732,7 +3733,7 @@
       },
       "NavigationDB/1.0.0": {
         "dependencies": {
-          "Npgsql": "4.0.7",
+          "Npgsql": "4.0.8",
           "WIM.DBUtilities": "1.1.11"
         },
         "runtime": {
@@ -3945,12 +3946,12 @@
       "path": "microsoft.applicationinsights/2.10.0",
       "hashPath": "microsoft.applicationinsights.2.10.0.nupkg.sha512"
     },
-    "Microsoft.ApplicationInsights.AspNetCore/2.7.0": {
+    "Microsoft.ApplicationInsights.AspNetCore/2.7.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-xiHAZWZd3+Q/hFOovELil0bd8P9j12h5jIG4mouV06waM5E8/8/sf1DWGxgj36CATOZQuKaFit5xVTYIcsKjJQ==",
-      "path": "microsoft.applicationinsights.aspnetcore/2.7.0",
-      "hashPath": "microsoft.applicationinsights.aspnetcore.2.7.0.nupkg.sha512"
+      "sha512": "sha512-XhFAwdhpmWG8upMg6ayvERlBYWzTzHcBZ0yYLk+Rs0OoOWH2RABov000Sbr2XNt0fpTPVUapjVMUv7VbODNE0g==",
+      "path": "microsoft.applicationinsights.aspnetcore/2.7.1",
+      "hashPath": "microsoft.applicationinsights.aspnetcore.2.7.1.nupkg.sha512"
     },
     "Microsoft.ApplicationInsights.DependencyCollector/2.10.0": {
       "type": "package",
@@ -4750,12 +4751,12 @@
       "path": "newtonsoft.json.bson/1.0.1",
       "hashPath": "newtonsoft.json.bson.1.0.1.nupkg.sha512"
     },
-    "Npgsql/4.0.7": {
+    "Npgsql/4.0.8": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-MtKdc1CjuS0BnHti51Skw5A1cbk0JmUxgRIepqq8zkgZ3kYpBOQJcrTGH+305I7kqQBtGs9Y/kpJjv/GBExulw==",
-      "path": "npgsql/4.0.7",
-      "hashPath": "npgsql.4.0.7.nupkg.sha512"
+      "sha512": "sha512-ta+QVmvIcBd8VJYPlMUS8K0zIDz0Njk392jtstX7fCDRJIy/KwHNgCSGXQuVFkIv/RYEBWGW0fyiEQWP2DJNUw==",
+      "path": "npgsql/4.0.8",
+      "hashPath": "npgsql.4.0.8.nupkg.sha512"
     },
     "Remotion.Linq/2.2.0": {
       "type": "package",

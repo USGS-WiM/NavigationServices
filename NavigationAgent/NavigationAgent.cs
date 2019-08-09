@@ -77,7 +77,6 @@ namespace NavigationAgent
             NavDBConnectionstring = NetworkSettings.Value.DBConnectionString;
             //deep clone to ensure objects stay stateless
             availableNetworks = JsonConvert.DeserializeObject<List<Network>>(JsonConvert.SerializeObject(NetworkSettings.Value.Networks));
-            
         }
         #endregion
         #region Methods
@@ -441,7 +440,6 @@ namespace NavigationAgent
                 sm($"Failed to load VAA properties with following error {ex.Message}", MessageType.error);
             }
         }
-
         private void mergeFlowDirectionNetworkTrace(routeoptiontype rotype) {
             IPosition FDir = null;
             IPosition first = null;
@@ -543,7 +541,7 @@ namespace NavigationAgent
                                 if (!((Polygon)clipGeometry).ContainsPoint(pnt)) return;
                                 break;
                             case GeoJSON.Net.GeoJSONObjectType.MultiPolygon:
-                                if (!((MultiPolygon)clipGeometry).ContainsPoint(pnt)) return;
+                                //if (!((MultiPolygon)clipGeometry).ContainsPoint(pnt)) return;
                                 break;
                         }//end switch
 
@@ -553,10 +551,10 @@ namespace NavigationAgent
                         switch (clipGeometry.Type)
                         {
                             case GeoJSON.Net.GeoJSONObjectType.Polygon:
-                                if (!lpnt.Any(p=>((Polygon)clipGeometry).ContainsPoint(p))) return;
+                                //if (!lpnt.Any(p=>((Polygon)clipGeometry).ContainsPoint(p))) return;
                                 break;
                             case GeoJSON.Net.GeoJSONObjectType.MultiPolygon:
-                                if (!lpnt.Any(p => ((MultiPolygon)clipGeometry).ContainsPoint(p))) return;
+                                //if (!lpnt.Any(p => ((MultiPolygon)clipGeometry).ContainsPoint(p))) return;
                                 break;
                         }//end switch
 

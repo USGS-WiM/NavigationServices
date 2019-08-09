@@ -27,7 +27,7 @@ namespace NavigationServices
             .AddEnvironmentVariables();
             if (env.IsDevelopment()) {
                 builder.AddUserSecrets<Startup>();
-                //builder.AddApplicationInsightsSettings(developerMode: true);
+                builder.AddApplicationInsightsSettings(developerMode: true);
             }
 
             Configuration = builder.Build();
