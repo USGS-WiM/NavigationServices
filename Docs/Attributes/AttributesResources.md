@@ -13,6 +13,7 @@ Table 1. Example of service location parameters names and values.
 or
 
 Table 2. Example of service NHD feature (comID) names and value.
+
 | Parameter     | Description   | Value |
 | ------------- |:-------------:| -----:|
 | id         | NHD feature (comid) | 6978858|

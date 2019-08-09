@@ -46,7 +46,7 @@ namespace NavigationServices.Controllers
         }
         #region METHODS
         [HttpGet(Name = "Attributes Resources")]
-        [APIDescription(type = DescriptionType.e_link, Description = "/Docs/Navigation/AvailableAttributesResources.md")]
+        [APIDescription(type = DescriptionType.e_link, Description = "/Docs/Attributes/AttributesResources.md")]
         public async Task<IActionResult> Get([FromQuery]Int32? featureid, [FromQuery]double? x, [FromQuery]double? y)
         {
             //returns list of available Navigations
