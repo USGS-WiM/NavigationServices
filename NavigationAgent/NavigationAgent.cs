@@ -117,7 +117,7 @@ namespace NavigationAgent
                         break;
                 }//end switch
                 
-                return new FeatureCollection(route.Features.Where(f=>f.Value.Id == null).Select(x=>x.Value).ToList());
+                return new FeatureCollection(route.Features.Where(f=>f.Value.Id == null).OrderBy(f=>f.Key).Select(x=>x.Value).ToList());
             }
             catch (Exception)
             {
@@ -488,6 +488,18 @@ namespace NavigationAgent
             }
         }
 
+        private Int32 getFeatureOrder(navigationfeaturetype ftype)
+        {
+            switch (ftype)
+            {
+                case navigationfeaturetype.e_point: return 1;
+                case navigationfeaturetype.e_fdrroute: return 2;
+                case navigationfeaturetype.e_traceroute: return 3;
+                case navigationfeaturetype.e_connection: return 4;
+                default: return 9;
+            }
+        }
+
         private string getFeatureName(routeoptiontype roType, navigationfeaturetype ftype) {
             string name = "";
             switch (ftype)
@@ -514,7 +526,7 @@ namespace NavigationAgent
                     name = "notspecified";
                     break;
             }//end switch
-            return getRouteOptionName(roType) + "_" + name;
+            return getFeatureOrder(ftype)+getRouteOptionName(roType) + "_" + name;
         }
         private string getRouteOptionName(routeoptiontype roType)
         {
