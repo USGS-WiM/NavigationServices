@@ -6,7 +6,7 @@
 //       01234567890123456789012345678901234567890123456789012345678901234567890
 //-------+---------+---------+---------+---------+---------+---------+---------+
 
-// copyright:   2017 WiM - USGS
+// copyright:   2017 WIM - USGS
 
 //    authors:  Jeremy K. Newson USGS Web Informatics and Mapping
 //              
@@ -25,6 +25,7 @@ using GeoJSON.Net;
 using GeoJSON.Net.Converters;
 using GeoJSON.Net.Feature;
 using GeoJSON.Net.Geometry;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using NavigationAgent.Resources;
 using NavigationAgent.ServiceAgents;
@@ -33,14 +34,16 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using WiM.Extensions;
-using WiM.Resources;
-using WiM.Utilities.Resources;
+using WIM.Extensions;
+using WIM.Resources;
+using WIM.Utilities.Resources;
+using NavigationDB;
 
 namespace NavigationAgent
 {
-    public interface INavigationAgent:IMessage
+    public interface INavigationAgent
     {
+        bool IncludeVAA { get; set; }
         List<Network> GetNetworks();
         Network GetNetwork(string networkIdentifier);
         bool InitializeRoute(Network selectednetwork);       
@@ -50,27 +53,30 @@ namespace NavigationAgent
     public class NavigationAgent : INavigationAgent
     {
         #region Properties
+        public bool IncludeVAA { get; set; } = false;
         private bool isRouteInitialized = false;
         private NLDIServiceAgent nldiAgent { get; set; }
 #warning this is a temperary agent until gages are migrated to production in NLDI
         private NLDIServiceAgent nldiAgent2 { get; set; }
         private StreamStatsServiceAgent ssAgent { get; set; }
+        private string NavDBConnectionstring { get; set; }
         private List<Network> availableNetworks { get; set; }
         private Route route { get; set; }
-        public List<Message> Messages { get; private set; }
+        private readonly IDictionary<Object, Object> _messages;
         private IGeometryObject clipGeometry { get; set; }
         private Double? distanceLimit { get; set; }
 
         #endregion
         #region Constructor
-        public NavigationAgent(IOptions<NetworkSettings> NetworkSettings)
+        public NavigationAgent(IOptions<NetworkSettings> NetworkSettings, IHttpContextAccessor httpContextAccessor)
         {
+            this._messages = httpContextAccessor.HttpContext.Items;
             nldiAgent = new NLDIServiceAgent(NetworkSettings.Value.NLDI);            
             nldiAgent2 = new NLDIServiceAgent(new Resource() { baseurl = "https://cida-test.er.usgs.gov", resources = NetworkSettings.Value.NLDI.resources });
             ssAgent = new StreamStatsServiceAgent(NetworkSettings.Value.StreamStats);
+            NavDBConnectionstring = NetworkSettings.Value.DBConnectionString;
             //deep clone to ensure objects stay stateless
             availableNetworks = JsonConvert.DeserializeObject<List<Network>>(JsonConvert.SerializeObject(NetworkSettings.Value.Networks));
-            Messages = new List<Message>();
         }
         #endregion
         #region Methods
@@ -111,7 +117,7 @@ namespace NavigationAgent
                         break;
                 }//end switch
                 
-                return new FeatureCollection(route.Features.Where(f=>f.Value.Id == null).Select(x=>x.Value).ToList());
+                return new FeatureCollection(route.Features.Where(f=>f.Value.Id == null).OrderBy(f=>f.Key).Select(x=>x.Value).ToList());
             }
             catch (Exception)
             {
@@ -120,9 +126,18 @@ namespace NavigationAgent
         }
         #endregion
         #region HELPER METHODS
-        private void sm(string message, MessageType type = MessageType.info)
+        protected void sm(string msg, MessageType type = MessageType.info)
         {
-            this.Messages.Add(new Message() { msg=message, type = type });
+            sm(new Message() { msg = msg, type = type });
+        }
+        private void sm(Message msg)
+        {
+            //wim_msgs comes from WIM.Standard/blob/staging/Services/Middleware/X-Messages.cs
+            //see services.startup for defined key (default is wim_msgs)
+            if (!this._messages.ContainsKey("wim_msgs"))
+                this._messages["wim_msgs"] = new List<Message>();
+
+            ((List<Message>)this._messages["wim_msgs"]).Add(msg);
         }
         private void loadFlowPath(routeoptiontype rotype = routeoptiontype.e_start) {
             
@@ -136,8 +151,6 @@ namespace NavigationAgent
             {
 
             }
-
-
         }
         private void loadNetworkPath() {
             loadFlowPath();
@@ -337,8 +350,16 @@ namespace NavigationAgent
                 Feature catchmentMask = route.Features[getFeatureName(rotype, navigationfeaturetype.e_catchment)];
 
                 Feature fldrTrace = this.ssAgent.GetFDirTraceAsync(startpoint, catchmentMask);
+
+                
                 if (fldrTrace == null)
                     throw new Exception("Flow direction trace object null.");
+
+                if (IncludeVAA)
+                {
+
+                    LoadVAAProperties(new List<Feature>() { fldrTrace });
+                }
 
                 addRouteFeature(getFeatureName(rotype, navigationfeaturetype.e_fdrroute), fldrTrace);
 
@@ -364,12 +385,15 @@ namespace NavigationAgent
                 {
                     traceItems = traceFC.Features.Where(f => !String.Equals(f.Properties["nhdplus_comid"]?.ToString(), this.route.ComID)).ToList();
                     nameprefix = getFeatureName(rotype, navigationfeaturetype.e_traceroute);
+
+                    if (IncludeVAA) LoadVAAProperties(traceItems);
                 }
                 else
                 {
                     traceItems = traceFC.Features;
                     nameprefix = source.ToString();
                 }
+
                 for (int i = 0; i < traceItems.Count(); i++)
                 {
                     addRouteFeature(nameprefix+i, traceItems[i]);
@@ -381,6 +405,39 @@ namespace NavigationAgent
             {
                 sm("Error loading Network trace " + ex.Message, MessageType.error);
                 return false;
+            }
+        }
+
+        private void LoadVAAProperties(List<Feature> traceItems)
+        {
+            try
+            {
+                using (var NavDBOps = new NavigationDBOps(this.NavDBConnectionstring))
+                {
+                    DateTime startDateTime = DateTime.Now;
+
+                    List<Int32> comids = traceItems.Select(i => Convert.ToInt32(i.Properties["nhdplus_comid"])).ToList();
+                    var properties = NavDBOps.GetAvailableProperties(comids);
+                    DateTime DBDateTime = DateTime.Now;
+
+                    traceItems.ForEach(i =>
+                    {
+                        var comid = Convert.ToInt32(i.Properties["nhdplus_comid"]);
+                        var VAA = properties.FirstOrDefault(p => p.ContainsKey("COMID") && Convert.ToInt32(p["COMID"]) == comid);
+
+                        foreach (var item in VAA.Where(p => p.Key != "COMID" && p.Key != "ID"))
+                        {
+                            i.Properties.Add(item.Key, item.Value);
+                        }//next
+                    });
+                    DateTime associatedDateTime = DateTime.Now;
+                    sm($"count {comids.Count()}; time to query: {(DBDateTime - startDateTime).Seconds} sec, time to associate to features {(associatedDateTime - DBDateTime).Seconds} sec.");
+
+                }
+            }
+            catch (Exception ex)
+            {
+                sm($"Failed to load VAA properties with following error {ex.Message}", MessageType.error);
             }
         }
         private void mergeFlowDirectionNetworkTrace(routeoptiontype rotype) {
@@ -431,6 +488,18 @@ namespace NavigationAgent
             }
         }
 
+        private Int32 getFeatureOrder(navigationfeaturetype ftype)
+        {
+            switch (ftype)
+            {
+                case navigationfeaturetype.e_point: return 1;
+                case navigationfeaturetype.e_fdrroute: return 2;
+                case navigationfeaturetype.e_traceroute: return 3;
+                case navigationfeaturetype.e_connection: return 4;
+                default: return 9;
+            }
+        }
+
         private string getFeatureName(routeoptiontype roType, navigationfeaturetype ftype) {
             string name = "";
             switch (ftype)
@@ -457,7 +526,7 @@ namespace NavigationAgent
                     name = "notspecified";
                     break;
             }//end switch
-            return getRouteOptionName(roType) + "_" + name;
+            return getFeatureOrder(ftype)+getRouteOptionName(roType) + "_" + name;
         }
         private string getRouteOptionName(routeoptiontype roType)
         {
@@ -484,7 +553,7 @@ namespace NavigationAgent
                                 if (!((Polygon)clipGeometry).ContainsPoint(pnt)) return;
                                 break;
                             case GeoJSON.Net.GeoJSONObjectType.MultiPolygon:
-                                if (!((MultiPolygon)clipGeometry).ContainsPoint(pnt)) return;
+                                //if (!((MultiPolygon)clipGeometry).ContainsPoint(pnt)) return;
                                 break;
                         }//end switch
 
@@ -494,10 +563,10 @@ namespace NavigationAgent
                         switch (clipGeometry.Type)
                         {
                             case GeoJSON.Net.GeoJSONObjectType.Polygon:
-                                if (!lpnt.Any(p=>((Polygon)clipGeometry).ContainsPoint(p))) return;
+                                //if (!lpnt.Any(p=>((Polygon)clipGeometry).ContainsPoint(p))) return;
                                 break;
                             case GeoJSON.Net.GeoJSONObjectType.MultiPolygon:
-                                if (!lpnt.Any(p => ((MultiPolygon)clipGeometry).ContainsPoint(p))) return;
+                                //if (!lpnt.Any(p => ((MultiPolygon)clipGeometry).ContainsPoint(p))) return;
                                 break;
                         }//end switch
 

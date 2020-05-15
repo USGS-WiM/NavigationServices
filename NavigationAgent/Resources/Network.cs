@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using WiM.Hypermedia;
+using WIM.Hypermedia;
 
 
 using System.Text;
@@ -14,7 +14,7 @@ namespace NavigationAgent.Resources
         public String Name { get; set; }
         public String Description { get; set; }
         public List<NavigationOption> Configuration { get; set; }
-        public List<Link> Links { get; set; }
+        public List<WIM.Resources.Link> Links { get; set; }
 
         public Boolean ShouldSerializeConfiguration()
         { return Configuration != null && Configuration.Count > 0; }

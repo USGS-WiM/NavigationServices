@@ -6,16 +6,18 @@ using Microsoft.Extensions.Logging;
 using NavigationAgent;
 using NavigationAgent.Resources;
 using Microsoft.AspNetCore.Mvc;
-using WiM.Services.Middleware;
-using WiM.Services.Analytics;
-using WiM.Utilities.ServiceAgent;
-using WiM.Services.Resources;
+using WIM.Services.Middleware;
+using WIM.Services.Analytics;
+using WIM.Utilities.ServiceAgent;
+using WIM.Services.Resources;
 using NavigationServices.Filters;
+using WIM.Services.Messaging;
 
 namespace NavigationServices
 {
     public class Startup
     {
+        private string _hostKey = "USGSWiM_HostName";
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -24,7 +26,8 @@ namespace NavigationServices
             .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
             .AddEnvironmentVariables();
             if (env.IsDevelopment()) {
-                //builder.AddApplicationInsightsSettings(developerMode: true);
+                builder.AddUserSecrets<Startup>();
+                builder.AddApplicationInsightsSettings(developerMode: true);
             }
 
             Configuration = builder.Build();
@@ -35,15 +38,25 @@ namespace NavigationServices
         //Method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //add functionality to inject IOptions<T>
-            services.AddOptions();
+            //Transient objects are always different; a new instance is provided to every controller and every service.
+            //Singleton objects are the same for every object and every request.
+            //Scoped objects are the same within a request, but different across different requests.
+
             //Configure injectable obj
+            services.AddScoped<IAnalyticsAgent, GoogleAnalyticsAgent>((gaa) => new GoogleAnalyticsAgent(Configuration["AnalyticsKey"]));
             services.Configure<NetworkSettings>(Configuration.GetSection("NetworkSettings"));
             services.Configure<APIConfigSettings>(Configuration.GetSection("APIConfigSettings"));
+
+            //add functionality to inject IOptions<T>
+            services.AddOptions();
+
+            //provides access to httpcontext
+            services.AddHttpContextAccessor();
 
             // Add framework services
             services.AddScoped<INavigationAgent, NavigationAgent.NavigationAgent>();
             services.AddScoped<IAnalyticsAgent, GoogleAnalyticsAgent>((gaa)=> new GoogleAnalyticsAgent(Configuration["AnalyticsKey"]));
+
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy", builder => builder.AllowAnyOrigin()
@@ -61,12 +74,10 @@ namespace NavigationServices
         // Method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
 
+            app.UseX_Messages(option => { option.HostKey = this._hostKey; });
             app.UseCors("CorsPolicy");
             app.Use_Analytics();
-            app.UseX_Messages();
 
             app.UseMvc();            
         }

@@ -6,7 +6,7 @@
 //       01234567890123456789012345678901234567890123456789012345678901234567890
 //-------+---------+---------+---------+---------+---------+---------+---------+
 
-// copyright:   2017 WiM - USGS
+// copyright:   2017 WIM - USGS
 
 //    authors:  Jeremy K. Newson USGS Web Informatics and Mapping
 //              
@@ -21,30 +21,30 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using WiM.Utilities.ServiceAgent;
+using WIM.Utilities.ServiceAgent;
 using NavigationAgent.Resources;
 using GeoJSON.Net.Geometry;
 using GeoJSON.Net.Feature;
 using GeoJSON.Net.CoordinateReferenceSystem;
 using System.Linq;
 using System.Collections;
-using WiM.Utilities.Resources;
+using WIM.Utilities.Resources;
 
 namespace NavigationAgent.ServiceAgents
 {
-    internal class NLDIServiceAgent : ServiceAgentBase
+    public class NLDIServiceAgent : ServiceAgentBase
     {
         #region Properties
         private Dictionary<string, string> Resources { get; set; }
         #endregion
         #region Constructor
-        internal NLDIServiceAgent(Resource nldiResource) : base(nldiResource.baseurl)
+        public NLDIServiceAgent(Resource nldiResource) : base(nldiResource.baseurl)
         {
             this.Resources = nldiResource.resources;
         }
         #endregion
         #region Methods
-        internal FeatureCollection GetLocalCatchmentAsync(Point location) {
+        public FeatureCollection GetLocalCatchmentAsync(Point location) {
             CRSBase crs = null;
 
             try
@@ -143,8 +143,10 @@ namespace NavigationAgent.ServiceAgents
                     return "wqp";
                 case querysourceType.e_huc12pourpoints:
                     return "huc12pp";
-                case querysourceType.e_gage:
+                case querysourceType.e_ssgage:
                     return "ss_gages";
+                case querysourceType.e_nwisgage:
+                    return "nwissite";
                 default:
                     return "";
             }
@@ -166,7 +168,8 @@ namespace NavigationAgent.ServiceAgents
         {
             e_flowlines =0,
             e_wqpsites =1,
-            e_gage =2,
+            e_ssgage =2,
+            e_nwisgage =3,
             e_huc12pourpoints=9
         }
         
