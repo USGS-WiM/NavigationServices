@@ -29,6 +29,8 @@ using GeoJSON.Net.CoordinateReferenceSystem;
 using System.Linq;
 using System.Collections;
 using WIM.Utilities.Resources;
+using Newtonsoft.Json;
+using System.Net.Http;
 
 namespace NavigationAgent.ServiceAgents
 {
@@ -75,6 +77,24 @@ namespace NavigationAgent.ServiceAgents
                 throw;
             }
         }
+        public NLDIOutput GetNewRaindropTraceAsync(Point location)
+        {
+            var inputs = new NLDIInput(location.Coordinates.Latitude.ToString(), location.Coordinates.Longitude.ToString());
+            var body = new StringContent(JsonConvert.SerializeObject(inputs), Encoding.UTF8, "application/json");
+
+            try
+            {
+                var reqInfo = GetRequestInfo(nldiservicetype.e_nldiraindrop, new object[] { location });
+                var response = this.ExecuteAsync<string>(reqInfo.RequestURI, body, methodType.e_POST).Result;
+                var requestResult = JsonConvert.DeserializeObject<NLDIOutput>(response);
+
+                return requestResult;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
         #endregion
         #region HelperMethods
         private RequestInfo GetRequestInfo(nldiservicetype requestType, object[] args=null) {
@@ -82,7 +102,7 @@ namespace NavigationAgent.ServiceAgents
             try
             {
                 requestInfo = new RequestInfo(string.Format(GetResourcrUrl(requestType),args));
-                
+
                 return requestInfo;
             }
             catch (Exception ex)
@@ -104,7 +124,10 @@ namespace NavigationAgent.ServiceAgents
                     case nldiservicetype.e_navigate:
                         resulturl = this.Resources["nldiQuery"];
                         break;
-                   
+                    case nldiservicetype.e_nldiraindrop:
+                        resulturl = this.Resources["nldiFlowPathQuery"];
+                        break;
+
                 }//end switch
                 return resulturl;
             }
@@ -155,7 +178,8 @@ namespace NavigationAgent.ServiceAgents
         private enum nldiservicetype
         {
             e_catchment =1,
-            e_navigate =2
+            e_navigate =2,
+            e_nldiraindrop =3
         }
         internal enum navigateType
         {            

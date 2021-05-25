@@ -56,7 +56,7 @@ namespace NavigationAgent
         public bool IncludeVAA { get; set; } = false;
         private bool isRouteInitialized = false;
         private NLDIServiceAgent nldiAgent { get; set; }
-#warning this is a temperary agent until gages are migrated to production in NLDI
+        #warning this is a temperary agent until gages are migrated to production in NLDI
         private NLDIServiceAgent nldiAgent2 { get; set; }
         private StreamStatsServiceAgent ssAgent { get; set; }
         private string NavDBConnectionstring { get; set; }
@@ -115,9 +115,12 @@ namespace NavigationAgent
                     case navigationtype.e_networktrace:
                         loadNetworkTrace();                     
                         break;
+                    case navigationtype.e_nldiflowpath:
+                        loadNewNLDIFlowPath();
+                        break;
                 }//end switch
                 
-                return new FeatureCollection(route.Features.Where(f=>f.Value.Id == null).OrderBy(f=>f.Key).Select(x=>x.Value).ToList());
+                return new FeatureCollection(route.Features.Where(f=>f.Value.Id == null || f.Value.Id == "downstreamFlowline" || f.Value.Id == "raindropPath").OrderBy(f=>f.Key).Select(x=>x.Value).ToList());
             }
             catch (Exception)
             {
@@ -138,6 +141,21 @@ namespace NavigationAgent
                 this._messages["wim_msgs"] = new List<Message>();
 
             ((List<Message>)this._messages["wim_msgs"]).Add(msg);
+        }
+        private void loadNewNLDIFlowPath(routeoptiontype rotype = routeoptiontype.e_start)
+        {
+
+            if (!loadNewNLDIRaindropTrace(rotype)) throw new Exception("Flowpath failed to load.");
+            if (!loadFlowDirectionTrace(rotype)) Console.WriteLine("FlowDirection failed to trace.");
+
+            if (!loadNetworkTrace(rotype, distance: distanceLimit)) Console.WriteLine("FlowDirection failed to trace.");
+            mergeFlowDirectionNetworkTrace(rotype);
+
+            if (route.Configuration.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_trunkatingpolygon) != null)
+            {
+
+            }
+
         }
         private void loadFlowPath(routeoptiontype rotype = routeoptiontype.e_start) {
             
@@ -201,6 +219,9 @@ namespace NavigationAgent
                     options.Insert(2, NavigationOption.QuerySourceOption());
                     options.Add(NavigationOption.LimitOption());
                     break;
+                case navigationtype.e_nldiflowpath:
+                    options.Add(NavigationOption.LimitOption());
+                    break;
                 default:
                     sm("No navigation options exist " + nType);
                     break;
@@ -246,6 +267,16 @@ namespace NavigationAgent
                         option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_navigationdirection);
                         if (option == null || !isValid(option)) return false;
                         option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_querysource);
+                        if (option == null || !isValid(option)) return false;
+
+                        //limit
+                        option = options.FirstOrDefault(x => x.ID == 0);
+                        if (option != null && !isValid(option)) return false;
+
+                        break;
+                    case navigationtype.e_nldiflowpath:
+                        // requires valid startpoint
+                        option = options.FirstOrDefault(x => x.ID == (int)NavigationOption.navigationoptiontype.e_startpoint);
                         if (option == null || !isValid(option)) return false;
 
                         //limit
@@ -404,6 +435,36 @@ namespace NavigationAgent
             catch (Exception ex)
             {
                 sm("Error loading Network trace " + ex.Message, MessageType.error);
+                return false;
+            }
+        }
+
+        private bool loadNewNLDIRaindropTrace(routeoptiontype rotype)
+        {
+            try
+            {
+                Point startpoint = ((Point)route.Features[getFeatureName(rotype, navigationfeaturetype.e_point)].Geometry);
+                NLDIOutput response = this.nldiAgent.GetNewRaindropTraceAsync(startpoint);
+                FeatureCollection flowTrace = JsonConvert.DeserializeObject<FeatureCollection>(JsonConvert.SerializeObject(response.outputs[0].value));
+
+
+                if (flowTrace == null)
+                    throw new Exception(String.Format("nldi failed to return flow trace. X {0}, Y {1}", startpoint.Coordinates.Longitude, startpoint.Coordinates.Latitude));
+                var comid = flowTrace.Features.FirstOrDefault().Properties["comid"].ToString();
+                if (string.IsNullOrEmpty(comid))
+                    throw new Exception(String.Format("nldi flow trace does not contain property comid X {0}, Y {1}", startpoint.Coordinates.Longitude, startpoint.Coordinates.Latitude));
+                this.route.ComID = comid;
+                var nameprefix = getFeatureName(rotype, navigationfeaturetype.e_catchment);
+                for (int i = 0; i < flowTrace.Features.Count(); i++)
+                {
+                    this.route.Features.Add(nameprefix + i, flowTrace.Features[i]);
+                }//next item
+                sm("Catchement valid, ComID: " + comid);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                sm("Catchement invalid " + ex.Message, MessageType.error);
                 return false;
             }
         }
@@ -582,7 +643,8 @@ namespace NavigationAgent
             //"Enumerable integer must match networklist ID in appsettings"
             e_flowpath=1,       // raindrop trace downstream to nhd, then downstream to a distance down stream
             e_networkpath = 2,  // network connection between 2 points
-            e_networktrace =3   // upstream/downstream trace, find nearest gage to a specified distance etc.
+            e_networktrace =3,   // upstream/downstream trace, find nearest gage to a specified distance etc.
+            e_nldiflowpath = 4  // NLDI raindrop trace 
         }      
         public enum navigationfeaturetype
         {
