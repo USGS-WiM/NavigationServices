@@ -383,7 +383,7 @@ namespace NavigationAgent
                     throw new Exception("Network trace from nldi agent is null. ComID: "+this.route.ComID);
                 if (source == NavigationOption.querysourcetype.flowline)
                 {
-                    traceItems = traceFC.Features.Where(f => !String.Equals(f.Properties["nhdplus_comid"]?.ToString(), this.route.ComID)).ToList();
+                    traceItems = traceFC.Features; //.Where(f => !String.Equals(f.Properties["nhdplus_comid"]?.ToString(), this.route.ComID)).ToList(); removes first reach if active
                     nameprefix = getFeatureName(rotype, navigationfeaturetype.e_traceroute);
 
                     if (IncludeVAA) LoadVAAProperties(traceItems);
